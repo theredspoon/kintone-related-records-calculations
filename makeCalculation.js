@@ -19,6 +19,22 @@
         return Number(acc) + Number(curr);
     };
 
+    const product = function(acc, curr) {
+        return Number(acc) * Number(curr);
+    };
+
+    const totalCount = function(acc, curr) {
+        return ;
+    };
+
+    const countUniques = function(acc, curr) {
+        return ;
+    };
+
+    const countNonemptyValues = function(acc, curr) {
+        return ;
+    };
+
     calculationFunction = sum;
 
     // INTERNAL SETTINGS
