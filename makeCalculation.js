@@ -12,7 +12,7 @@ Outputs a number
 Requirements:
 */
 
-// User-Defined Settings
+// User-Defined Settings...needs an API call to get form fields
 
 var displayAppRelatedRecordsFieldCode = "";
 
@@ -28,8 +28,9 @@ var calculationFunction = function (acc, curr) {
 };
 
 // Internal Settings
+var QUERYLIMIT = 500;
 var appId = kintone.app.getId();
-var datasourceAppId = ""
+var datasourceAppId = "";
 var makeCalculation = function (callback, array) {
     return array.reduce(function (acc, curr) {
         return callback(acc, curr);
@@ -74,22 +75,34 @@ kintone.events.on([
             queryFilterSubstring = queryFilterSubstring + " and " + filterCond;
         }
 
-        // FIXME: handle filtered records when total related records > 500
-        var queryString = queryFilterSubstring + " order by $id asc limit 500 offset 0"
-
         // API call to get the related records
         var requestParams = {
             "fields": [targetFieldCodeInDatasourceApp],
             "app": datasourceAppId,
-            "query": queryString,
+            // "query": see fetchAllRecords
             "totalCount": true
         }
 
-        return kintone.api(kintone.api.url("/k/v1/records", true), "GET", requestParams);
+        var fetchAllRecords = function (params, filter, opt_offset, opt_records) {
+            var offset = opt_offset || 0;
+            var allRecords = opt_records || [];
+
+            params["query"] = filter + " limit " + QUERYLIMIT + " offset " + offset;
+
+            return kintone.api(kintone.api.url("/k/v1/records", true), "GET", params).then(function(resp) {
+                allRecords = allRecords.concat(resp.records);
+                if (resp.records.length === QUERYLIMIT) {
+                    return fetchAllRecords(params, filter, offset + QUERYLIMIT, allRecords);
+                }
+                return allRecords;
+            });
+        };
+
+        return fetchAllRecords(requestParams, queryFilterSubstring);
     })
     .then(function(resp) {
 
-        var targetFieldValues = resp["records"].map(function (rec) {
+        var targetFieldValues = resp.map(function (rec) {
             return rec[targetFieldCodeInDatasourceApp]["value"];
         });
 
