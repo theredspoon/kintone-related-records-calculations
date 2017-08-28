@@ -1,5 +1,4 @@
-jQuery.noConflict();
-(function($) {
+(function() {
     "use strict";
     // USER-DEFINED SETTINGS (to be added to plugin settings)...needs an API call to get form fields
     let displayAppRelatedRecordsFieldCode = "first_place_wins_rr";
@@ -115,4 +114,4 @@ jQuery.noConflict();
         event.record[outputFieldCodeInDisplayApp]["disabled"] = true;
         return event;
     });
-})(jQuery);
+})();
