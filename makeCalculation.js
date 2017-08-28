@@ -88,16 +88,23 @@ kintone.events.on([
         return kintone.api(kintone.api.url("/k/v1/records", true), "GET", requestParams);
     })
     .then(function(resp) {
-        console.log(resp);
-        // run calculation here
+
         var targetFieldValues = resp["records"].map(function (rec) {
             return rec[targetFieldCodeInDatasourceApp]["value"];
         });
-        console.log(outputFieldValue(targetFieldValues));
+
+        // make the calculation
         record[outputFieldCodeInDisplayApp]["value"] = outputFieldValue(targetFieldValues);
+
         return event;
     })
     .catch(function(err) {
         console.log("Promise chain error: ", err);
     });
+});
+
+kintone.events.on(["app.record.edit.show", "app.record.create.show", "app.record.index.edit.show"], function (event) {
+    // Restricting the input of the output field
+    event.record[outputFieldCodeInDisplayApp]["disabled"] = true;
+    return event;
 });
