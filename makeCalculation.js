@@ -51,9 +51,8 @@
         return;
     }
 
-    // how many items in the array are also on the list?
-        // count instances of a specified value? <-- subcase
-    const countMatchesToList = function(list, array) { // needs testing
+    // what items in an array are also on another list?
+    const getMatchesToList = function(list, array) { // needs testing
         return array.reduce(function(acc, curr){
             // if curr is on the list, add to matches
             if (list.indexOf(curr) !== -1) {
@@ -61,7 +60,13 @@
             } else {
                 return acc;
             }
-        }, []).length;
+        }, []);
+    }
+
+    // how many items in the array are also on the list?
+        // count instances of a specified value? <-- subcase
+    const countMatchesToList = function(list, array) {
+        return getMatchesToList(list, array).length;
     }
 
     calculationFunction = sum;
