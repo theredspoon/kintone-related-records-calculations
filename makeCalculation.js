@@ -15,25 +15,54 @@
     // takes in many numbers and outputs one number
 
     // possible calculation functions: sum, product, total count, count uniques, count nonempty values
-    const sum = function(acc, curr) {
-        return Number(acc) + Number(curr);
+    const sum = function (array) {
+        return array.reduce(function(acc, curr) {
+            return Number(acc) + Number(curr);
+        });
     };
 
-    const product = function(acc, curr) {
-        return Number(acc) * Number(curr);
+    const product = function (array) {
+        return array.reduce(function(acc, curr) {
+            return Number(acc) * Number(curr);
+        });
     };
 
-    const totalCount = function(acc, curr) {
+    const totalNumber = function(array) {
+        return array.length;
+    };
+
+    const countUniques = function (array) {
+        return array.reduce(function(acc, curr) { // needs testing
+            if (acc.indexOf(curr) === -1) {
+                return acc.concat(curr);
+            } else {
+                return acc;
+            }
+        }, []).length;
+    }
+
+    const countNonemptyValues = function(acc, curr) { // can an empty value be zero?
+        let uniqueArray;
+        
         return ;
     };
 
-    const countUniques = function(acc, curr) {
-        return ;
-    };
+    const countNonzeroValues = function(acc, curr) {
+        return;
+    }
 
-    const countNonemptyValues = function(acc, curr) {
-        return ;
-    };
+    // how many items in the array are also on the list?
+        // count instances of a specified value? <-- subcase
+    const countMatchesToList = function(list, array) { // needs testing
+        return array.reduce(function(acc, curr){
+            // if curr is on the list, add to matches
+            if (list.indexOf(curr) !== -1) {
+                return acc.concat(curr);
+            } else {
+                return acc;
+            }
+        }, []).length;
+    }
 
     calculationFunction = sum;
 
@@ -42,9 +71,7 @@
     const appId = kintone.app.getId();
     let datasourceAppId = "";
     const makeCalculation = function(callback, array) {
-        return array.reduce(function(acc, curr) {
-            return callback(acc, curr);
-        });
+        return callback(array);
     };
 
     let outputFieldValue = makeCalculation.bind(null, calculationFunction);
