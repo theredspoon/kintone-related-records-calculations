@@ -41,14 +41,24 @@
         }, []).length;
     }
 
-    const countNonemptyValues = function(acc, curr) { // can an empty value be zero?
-        let uniqueArray;
-        
-        return ;
+    const countNonemptyValues = function(acc, curr) { // is 0 an empty value? no
+        return array.reduce(function(acc, curr) { // needs testing on dates
+            if (curr !== "") {
+                return acc.concat(curr);
+            } else {
+                return acc;
+            }
+        }, []).length;
     };
 
     const countNonzeroValues = function(acc, curr) {
-        return;
+        return array.reduce(function(acc, curr) { // is this for strings too?
+            if (curr !== 0) {
+                return acc.concat(curr);
+            } else {
+                return acc;
+            }
+        }, []).length;
     }
 
     // what items in an array are also on another list?
