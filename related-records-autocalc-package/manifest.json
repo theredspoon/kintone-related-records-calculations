@@ -1,0 +1,41 @@
+{
+    "manifest_version": 1,
+    "version": 1,
+    "type": "APP",
+    "name": {
+        "en": "Related Records Value Calculations"
+    },
+    "description": {
+        "en": "Outputs a calculation of related records values (sum, average, count, etc)"
+    },
+    "icon": "image/icon.png",
+    "homepage_url": {
+        "en": "https://www.kintone.com"
+    },
+    "desktop": {
+        "js": [
+            "https://dl.dropboxusercontent.com/s/i82zzmbo72eb388/function-definitions.js",
+            "https://dl.dropboxusercontent.com/s/np8zh82dksjj98x/customize.js"
+        ],
+        "css": [
+            "https://dl.dropboxusercontent.com/s/qam1tsuxdt8jg7c/customize.css"
+        ]
+    },
+    "mobile": {
+        "js": [
+            "https://dl.dropboxusercontent.com/s/0rylnw5hauuam9o/mobile-customize.js"
+        ]
+    },
+    "config": {
+        "html": "html/config.html",
+        "js": [
+            "https://js.cybozu.com/vuejs/v2.3.3/vue.min.js",
+            "https://dl.dropboxusercontent.com/s/i82zzmbo72eb388/function-definitions.js",
+            "https://dl.dropboxusercontent.com/s/ntdbtax5epyv86w/config.js"
+        ],
+        "css": [
+            "https://dl.dropboxusercontent.com/s/66hlzw0jrh26hy5/config.css"
+        ],
+        "required_params": []
+    }
+}
