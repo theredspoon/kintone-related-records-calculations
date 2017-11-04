@@ -30,6 +30,8 @@
         "formFields": {},
         "relatedRecords": [],
         "calculationOutputFields": [],
+        "counter": 0,
+        "computations": [] // config settings to pass into customize.js
     };
 
     setConfigFields(data);
@@ -157,13 +159,14 @@
     Vue.component("computation", {
         data: function () {
             return {
-                "displayAppRRField": "",
+                "displayAppRRField": "", // parent needs to grab this
                 "relatedAppDisplayFields": "",
-                "relatedAppTargetField": "",
+                "relatedAppTargetField": "", // parent needs to grab this
                 "outputFields": "",
-                "outputField": "",
+                "outputField": "", // parent needs to grab this
                 "calcFields": "",
-                "calcField": ""
+                "calcField": "", // parent needs to grab this
+                "id": "" 
             }
         },
         methods: {
@@ -190,11 +193,23 @@
             handleCalcFieldSelection: function (selection) {
                 this.calcField = selection;
                 console.log('this.calcField is ', selection);
+            },
+            addNewComputation: function () {
+                // add new blank computation to computations array
+                console.log('add new computation, index is ', this.index);
+                this.$emit("addNewComputation", this.index)
+            },
+            removeComputation: function () {
+                // remove this computation from computations array
+                console.log('remove new computation, index is ', this.index);
+                this.$emit("removeComputation", this.index)
             }
 
         },
         template: `
             <div>
+                <button @click="addNewComputation">+</button>
+                <button v-if="index > 0" @click="removeComputation">-</button>
                 <relatedRecordsSelect
                     v-bind:relatedRecords="relatedRecords"
                     v-bind:displayAppRRField="displayAppRRField"
@@ -224,7 +239,9 @@
             "calcFunctions",
             "formFields",
             "relatedRecords",
-            "calculationOutputFields"
+            "calculationOutputFields",
+            "computation",
+            "index"
         ]
     })
 
@@ -233,17 +250,49 @@
         // initial state
         data: data,
         el: "#plugin",
+        created: function () {
+            this.handleAddComputation(0);
+        },
         methods: {
-            
+            count: function () {
+                this.counter++
+                return this.counter;
+            },
+            handleAddComputation: function (index) {
+                let before = this.computations.slice(0, index + 1);
+                let after = this.computations.slice(index + 1, this.computations.length);
+                this.computations = [...before, {
+                    "displayAppRRField": "", // parent needs to grab this
+                    "relatedAppDisplayFields": "",
+                    "relatedAppTargetField": "", // parent needs to grab this
+                    "outputFields": "",
+                    "outputField": "", // parent needs to grab this
+                    "calcFields": "",
+                    "calcField": "",
+                    "id": this.count()
+                }, ...after];
+            },
+            handleRemoveComputation: function (index) {
+                let before = this.computations.slice(0, index);
+                let after = this.computations.slice(index + 1, this.computations.length);
+                this.computations = [...before, ...after];
+            }
         },
         template: `
-            test inside root instance
+            <div>
             <computation
+                v-for="(computation, index) in computations"
+                @addNewComputation="handleAddComputation"
+                @removeComputation="handleRemoveComputation"
+                v-bind:computation="computation"
+                v-bind:index="index"
+                v-bind:key="computation.id"
                 v-bind:calcFunctions="calcFunctions"
                 v-bind:formFields="formFields"
                 v-bind:calculationOutputFields="calculationOutputFields"
                 v-bind:relatedRecords="relatedRecords"
             ></computation>
+            </div>
         `
     });
 
