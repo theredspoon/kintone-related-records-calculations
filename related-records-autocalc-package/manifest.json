@@ -14,27 +14,27 @@
     },
     "desktop": {
         "js": [
-            "function-definitions.js",
-            "customize.js"
+            "js/function-definitions.js",
+            "js/customize.js"
         ],
         "css": [
-            "customize.css"
+            "css/customize.css"
         ]
     },
     "mobile": {
         "js": [
-            "mobile-customize.js"
+            "js/mobile-customize.js"
         ]
     },
     "config": {
         "html": "html/config.html",
         "js": [
             "https://js.cybozu.com/vuejs/v2.3.3/vue.min.js",
-            "function-definitions.js",
-            "config.js"
+            "js/function-definitions.js",
+            "js/config.js"
         ],
         "css": [
-            "config.css"
+            "css/config.css"
         ],
         "required_params": []
     }
