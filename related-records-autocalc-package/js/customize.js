@@ -213,7 +213,7 @@
     // Restricting the input of the output field
     // do this for all allocated output fields
         rehydratedConfig.forEach(function(computation) {
-            event.record[computation.outputFieldCode]["disabled"] = true;
+            event.record[computation.outputField.code]["disabled"] = true;
         });
 
     // Restrict editing field settings of related records field
