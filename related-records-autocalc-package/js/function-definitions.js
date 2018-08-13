@@ -2,89 +2,32 @@
 
 // CALCULATION FUNCTIONS
 var NUMCALCFUNCTIONS = {
-    "Sum": {name: "Sum", function: sum},
-    "Product": {name: "Product", function: product},
-    "Count": {name: "Count", function: totalNumber},
-    "Mean": {name: "Mean", function: mean},
-    "Median": {name: "Median", function: median},
-    "Count Non-zero Values": {name: "Count Non-zero Values", function: countNonzeroValues}
+    "Sum": {name: "Sum", fn: "sum"},
+    "Product": {name: "Product", fn: "product"},
+    "Count": {name: "Count", fn: "totalNumber"},
+    "Mean": {name: "Mean", fn: "mean"},
+    "Median": {name: "Median", fn: "median"},
+    "Count Non-zero Values": {name: "Count Non-zero Values", fn: "countNonzeroValues"}
 }
 var TEXTCALCFUNCTIONS = {
-    "Count All": {name: "Count All", function: totalNumber},
-    "Count Uniques": {name: "Count Uniques", function: countUniques},
-    "Count Non-empty Values": {name: "Count Non-empty Values", function: countNonemptyValues}
+    "Count All": {name: "Count All", fn: "totalNumber"},
+    "Count Uniques": {name: "Count Uniques", fn: "countUniques"},
+    "Count Non-empty Values": {name: "Count Non-empty Values", fn: "countNonemptyValues"}
 };
-
-function sum (array) {
-    return array.reduce(function(acc, curr) {
-        return Number(acc) + Number(curr);
-    });
-};
-
-function product (array) {
-    return array.reduce(function(acc, curr) {
-        return Number(acc) * Number(curr);
-    });
-};
-
-function totalNumber (array) {
-    return array.length;
-};
-
-function mean (array) {
-    return sum(array) / array.length;
-};
-
-function median (array) {
-    if (!array.length) {
-        return 0
-    };
-    var numbers = args.slice(0).sort((a,b) => a - b);
-    var middle = Math.floor(numbers.length / 2);
-    var isEven = numbers.length % 2 === 0;
-    return isEven ? (numbers[middle] + numbers[middle - 1]) / 2 : numbers[middle];
-};
-
-// not including mode since it's unclear how ties
-// would be handled in a way that returns one value
-function mode (array) {
-    return;
-};
-
-function countUniques (array) {
-    return array.reduce(function(acc, curr) { // needs testing
-        if (acc.indexOf(curr) === -1) {
-            return acc.concat(curr);
-        } else {
-            return acc;
-        }
-    }, []).length;
-}
-
-function countNonemptyValues (acc, curr) { // is 0 an empty value? no
-    return array.reduce(function(acc, curr) { // needs testing on dates
-        if (curr !== "") {
-            return acc.concat(curr);
-        } else {
-            return acc;
-        }
-    }, []).length;
-};
-
-function countNonzeroValues (acc, curr) {
-    return array.reduce(function(acc, curr) { // needs testing on dates
-        if (curr !== 0) {
-            return acc.concat(curr);
-        } else {
-            return acc;
-        }
-    }, []).length;
-}
 
 // CONFIG FUNCTIONS
 var appId = kintone.app.getId();
 
+function rehydrateComputations(config) {
+    let rehydratedArray = [];
+    for (let computation in config) {
+        rehydratedArray = rehydratedArray.concat(JSON.parse(config[computation]));
+    }
+    return rehydratedArray;
+}
+
 function getFormFields (id) {
+    // TODO: spinner while waiting
     return kintone.api(kintone.api.url("/k/v1/app/form/fields", true), "GET", {"app": id})
         .then(function (resp) {
             return resp.properties;
@@ -93,10 +36,8 @@ function getFormFields (id) {
         });
 }
 
-function setFormFields(fieldList, config) {
-    Object.assign(config, {
-        "formFields": fieldList
-    })
+function isFieldTypeNumeric(field) {
+    return field.type === "NUMBER";
 }
 
 function isFieldTypeDisplayed (fieldType) {
@@ -147,20 +88,20 @@ function getRRDisplayFieldPropsFromRelatedApp (relatedAppFields, displayField) {
     }
 }
 
-function setRRInfo (fieldList, config) {
-    var records = [];
-    var relatedAppId = "";
-    var relatedRecord = {};
-    var displayFields = {};
-    var displayFieldArray = [];
-    var recordsList = Object.values(fieldList).reduce((acc, currVal) => {
-        if (currVal.type === 'REFERENCE_TABLE') {
-            acc = acc.concat(currVal);
-        }
-        return acc;
-    }, []);
+function getRRDisplayFieldProps (fieldList) {
+    let records = [];
+    let relatedAppId = "";
+    let relatedRecord = {};
+    let displayFields = {};
+    let displayFieldArray = [];
+    let recordsList = Object.values(fieldList).filter(field => {
+        return field.type === 'REFERENCE_TABLE';
+    });
 
-    Promise.all(recordsList.map(function(relatedRecord) {
+    // TODO: spinner while waiting
+
+    // Make API call to related apps to get additional data on RR display fields
+    return Promise.all(recordsList.map(function(relatedRecord) {
         relatedAppId = relatedRecord.referenceTable.relatedApp.app;
         return getFormFields(relatedAppId)
         .then(function (relatedAppFieldList) {
@@ -177,54 +118,40 @@ function setRRInfo (fieldList, config) {
                 relatedRecord.referenceTable.displayFields[field.code] = field;
             }
             return relatedRecord;
-        }).catch(function (err) {
-            console.log('error in setRRInfo: ', err);
         })
-    }))
-    .then(function(records) {
-        Object.assign(config, {
-            "relatedRecords": records
+        .catch(function (err) {
+            console.error('error in getRRDisplayFieldProps: ', err);
+        })
+    }));
+}
+
+function setOutputFields (fieldList) {
+    return Object.values(fieldList).filter(field => isFieldTypeNumeric(field))
+        .map(field => {
+            return {
+                label: field.label,
+                code: field.code,
+                type: field.type
+            }
         });
-    });
 }
 
-function setCalculationOutputFields (fieldList, config) {
-    var textOutputFields = [];
-    var numOutputFields = [];
-    for (var field in fieldList) {
-        if (fieldList[field].type === "SINGLE_LINE_TEXT" && fieldList[field].expression === "") {
-            textOutputFields = textOutputFields.concat({
-                label: fieldList[field].label,
-                code: fieldList[field].code,
-                type: fieldList[field].type
-            });
-        } else if (fieldList[field].type === "NUMBER") {
-            numOutputFields = numOutputFields.concat({
-                label: fieldList[field].label,
-                code: fieldList[field].code,
-                type: fieldList[field].type
-            });
-        }
-    }
-    Object.assign(config, {
-        "calculationOutputFields": {
-            "textOutputFields": textOutputFields,
-            "numOutputFields": numOutputFields
-        }
-    });
-}
-
-function setConfigFields (conf, cb) {
+function setConfigFields (config) {
     return getFormFields(appId).then(function (resp) {
-        setFormFields(resp, conf);
-        setRRInfo(resp, conf);
-        setCalculationOutputFields(resp, conf);
+        getRRDisplayFieldProps(resp).then(function (records) {
+            Object.assign(config, {
+                "formFields": resp,
+                "relatedRecords": records,
+                "outputFields": setOutputFields(resp)
+            })
+        })
+
     }).catch(function (err) {
-        console.log('error in setConfigFields: ', err);
+        console.error('error in setConfigFields: ', err);
     });
 }
 
-// Given a related record field code, get the display app field codes associated with that RR
+// Given a related record field, get the display app fields associated with that RR
 function getRelatedAppDisplayFields (selectedRRField, RRArray) {
     for (let i = 0, l = RRArray.length; i < l; i++) {
         if (RRArray[i].code === selectedRRField.code) {
@@ -233,16 +160,29 @@ function getRelatedAppDisplayFields (selectedRRField, RRArray) {
     }
 }
 
-function isFieldTypeNumeric (field) {
-    return field.type === "NUMBER";
-}
-
-function getOutputFields(field, calculationOutputFields) {
-    return isFieldTypeNumeric(field) ? 
-    calculationOutputFields.numOutputFields : calculationOutputFields.textOutputFields;
-}
-
-function getCalcFields(field, calcFunctions) {
+function getCalcFuncFields(field, calcFunctions) {
     return isFieldTypeNumeric(field) ? 
     calcFunctions.num : calcFunctions.text;
+}
+
+function passErrorHandler(computations) {
+    let outputFieldCodes = [];
+    for (let computation of computations) {
+
+        // if computation form fields are incomplete
+        if (!computation.calcFuncField.fn) {
+            throw new Error("Please fill out all the form fields completely.");
+        }
+        
+        // if one output field handles more than one computation
+        if (outputFieldCodes.indexOf(computation.outputField.code) === -1) {
+            outputFieldCodes = outputFieldCodes.concat(computation.outputField.code);
+        } else {
+            throw new Error("Please connect one output field to exactly one calculation.");
+        }
+
+        // if previously saved field is no longer found after the API call updates the list
+
+    };
+    return true;
 }
