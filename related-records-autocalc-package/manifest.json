@@ -3,13 +3,16 @@
     "version": 1,
     "type": "APP",
     "name": {
+        "ja":"関連レコード一覧の値計算プラグイン",
         "en": "Related Records Value Calculations"
     },
     "description": {
+        "ja": "関連レコード一覧の値を計算し、指定のフィールドに結果を表示できます。（合計、平均、個数計算など）",
         "en": "Outputs a calculation of related records values (sum, average, count, etc)"
     },
     "icon": "image/icon.png",
     "homepage_url": {
+        "ja":"https://kintone.cybozu.co.jp/jp/",
         "en": "https://www.kintone.com"
     },
     "desktop": {
