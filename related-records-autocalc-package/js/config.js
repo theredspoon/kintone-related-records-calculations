@@ -13,8 +13,8 @@
 
     var data = {
         "calcFunctions": {
-            "num": NUMCALCFUNCTIONS,
-            "text": TEXTCALCFUNCTIONS
+            "num": window["myFunctions"].NUMCALCFUNCTIONS,
+            "text": window["myFunctions"].TEXTCALCFUNCTIONS
         },
         "formFields": {},
         "relatedRecords": previouslySavedComputations.map(comp => comp.displayAppRRField) || [],

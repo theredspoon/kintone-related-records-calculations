@@ -1,22 +1,26 @@
 "use strict"
 
-// CALCULATION FUNCTIONS
-var NUMCALCFUNCTIONS = {
-    "Sum": {name: "Sum", fn: "sum"},
-    "Product": {name: "Product", fn: "product"},
-    "Count": {name: "Count", fn: "totalNumber"},
-    "Mean": {name: "Mean", fn: "mean"},
-    "Median": {name: "Median", fn: "median"},
-    "Count Non-zero Values": {name: "Count Non-zero Values", fn: "countNonzeroValues"}
-}
-var TEXTCALCFUNCTIONS = {
-    "Count All": {name: "Count All", fn: "totalNumber"},
-    "Count Uniques": {name: "Count Uniques", fn: "countUniques"},
-    "Count Non-empty Values": {name: "Count Non-empty Values", fn: "countNonemptyValues"}
+var myFunctions = {
+    // CALCULATION FUNCTIONS
+    "NUMCALCFUNCTIONS": {
+        "Sum": {name: "Sum", fn: "sum"},
+        "Product": {name: "Product", fn: "product"},
+        "Count": {name: "Count", fn: "totalNumber"},
+        "Mean": {name: "Mean", fn: "mean"},
+        "Median": {name: "Median", fn: "median"},
+        "Count Non-zero Values": {name: "Count Non-zero Values", fn: "countNonzeroValues"}
+    },
+    "TEXTCALCFUNCTIONS": {
+        "Count All": {name: "Count All", fn: "totalNumber"},
+        "Count Uniques": {name: "Count Uniques", fn: "countUniques"},
+        "Count Non-empty Values": {name: "Count Non-empty Values", fn: "countNonemptyValues"}
+    },
+    // CONFIG FUNCTIONS
+    "appId": kintone.app.getId()
 };
+window["myFunctions"] = myFunctions;
+console.log(window["myFunctions"]);
 
-// CONFIG FUNCTIONS
-var appId = kintone.app.getId();
 
 function rehydrateComputations(config) {
     let rehydratedArray = [];
@@ -137,7 +141,7 @@ function setOutputFields (fieldList) {
 }
 
 function setConfigFields (config) {
-    return getFormFields(appId).then(function (resp) {
+    return getFormFields(window["myFunctions"].appId).then(function (resp) {
         getRRDisplayFieldProps(resp).then(function (records) {
             Object.assign(config, {
                 "formFields": resp,
