@@ -118,22 +118,21 @@ let myFunctions = {
                 console.error('error in getRRDisplayFieldProps: ', err);
             })
         }));
+    },
+    setOutputFields: function (fieldList) {
+        return Object.values(fieldList).filter(field => this.isFieldTypeNumeric(field))
+            .map(field => {
+                return {
+                    label: field.label,
+                    code: field.code,
+                    type: field.type
+                }
+            });
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function setOutputFields (fieldList) {
-    return Object.values(fieldList).filter(field => window["myFunctions"].isFieldTypeNumeric(field))
-        .map(field => {
-            return {
-                label: field.label,
-                code: field.code,
-                type: field.type
-            }
-        });
-}
 
 function setConfigFields (config) {
     return window["myFunctions"].getFormFields(window["myFunctions"].appId).then(function (resp) {
@@ -141,7 +140,7 @@ function setConfigFields (config) {
             Object.assign(config, {
                 "formFields": resp,
                 "relatedRecords": records,
-                "outputFields": setOutputFields(resp)
+                "outputFields": window["myFunctions"].setOutputFields(resp)
             })
         })
 
