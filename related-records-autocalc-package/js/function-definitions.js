@@ -1,6 +1,6 @@
 "use strict"
 
-var myFunctions = {
+let myFunctions = {
     // CALCULATION FUNCTIONS
     NUMCALCFUNCTIONS: {
         "Sum": {name: "Sum", fn: "sum"},
@@ -81,48 +81,48 @@ var myFunctions = {
                 };
             }
         }
+    },
+    getRRDisplayFieldProps: function (fieldList) {
+        let records = [];
+        let relatedAppId = "";
+        let relatedRecord = {};
+        let displayFields = {};
+        let displayFieldArray = [];
+        let recordsList = Object.values(fieldList).filter(field => {
+            return field.type === 'REFERENCE_TABLE';
+        });
+
+        // TODO: spinner while waiting
+
+        let self = this;
+        // Make API call to related apps to get additional data on RR display fields
+        return Promise.all(recordsList.map(function(relatedRecord) {
+            relatedAppId = relatedRecord.referenceTable.relatedApp.app;
+            return self.getFormFields(relatedAppId)
+            .then(function (relatedAppFieldList) {
+                displayFieldArray = relatedRecord.referenceTable.displayFields;
+
+                // turn each string in the array into an object
+                displayFieldArray = displayFieldArray.map(
+                    (displayField)=>self.getRRDisplayFieldPropsFromRelatedApp(relatedAppFieldList, displayField))
+                .filter((field)=>self.isFieldTypeDisplayed(field.type));
+
+                // turn the array into an object
+                relatedRecord.referenceTable.displayFields = {};
+                for (let field of displayFieldArray) {
+                    relatedRecord.referenceTable.displayFields[field.code] = field;
+                }
+                return relatedRecord;
+            })
+            .catch(function (err) {
+                console.error('error in getRRDisplayFieldProps: ', err);
+            })
+        }));
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function getRRDisplayFieldProps (fieldList) {
-    let records = [];
-    let relatedAppId = "";
-    let relatedRecord = {};
-    let displayFields = {};
-    let displayFieldArray = [];
-    let recordsList = Object.values(fieldList).filter(field => {
-        return field.type === 'REFERENCE_TABLE';
-    });
-
-    // TODO: spinner while waiting
-
-    // Make API call to related apps to get additional data on RR display fields
-    return Promise.all(recordsList.map(function(relatedRecord) {
-        relatedAppId = relatedRecord.referenceTable.relatedApp.app;
-        return window["myFunctions"].getFormFields(relatedAppId)
-        .then(function (relatedAppFieldList) {
-            displayFieldArray = relatedRecord.referenceTable.displayFields;
-
-            // turn each string in the array into an object
-            displayFieldArray = displayFieldArray.map(
-                (displayField)=>window["myFunctions"].getRRDisplayFieldPropsFromRelatedApp(relatedAppFieldList, displayField))
-            .filter((field)=>window["myFunctions"].isFieldTypeDisplayed(field.type));
-
-            // turn the array into an object
-            relatedRecord.referenceTable.displayFields = {};
-            for (let field of displayFieldArray) {
-                relatedRecord.referenceTable.displayFields[field.code] = field;
-            }
-            return relatedRecord;
-        })
-        .catch(function (err) {
-            console.error('error in getRRDisplayFieldProps: ', err);
-        })
-    }));
-}
 
 function setOutputFields (fieldList) {
     return Object.values(fieldList).filter(field => window["myFunctions"].isFieldTypeNumeric(field))
@@ -137,7 +137,7 @@ function setOutputFields (fieldList) {
 
 function setConfigFields (config) {
     return window["myFunctions"].getFormFields(window["myFunctions"].appId).then(function (resp) {
-        getRRDisplayFieldProps(resp).then(function (records) {
+        window["myFunctions"].getRRDisplayFieldProps(resp).then(function (records) {
             Object.assign(config, {
                 "formFields": resp,
                 "relatedRecords": records,
