@@ -16,19 +16,18 @@ var myFunctions = {
         "Count Non-empty Values": {name: "Count Non-empty Values", fn: "countNonemptyValues"}
     },
     // CONFIG FUNCTIONS
-    "appId": kintone.app.getId()
+    "appId": kintone.app.getId(),
+    "rehydrateComputations": function (config) {
+        let rehydratedArray = [];
+        for (let computation in config) {
+            rehydratedArray = rehydratedArray.concat(JSON.parse(config[computation]));
+        }
+        return rehydratedArray;
+    }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function rehydrateComputations(config) {
-    let rehydratedArray = [];
-    for (let computation in config) {
-        rehydratedArray = rehydratedArray.concat(JSON.parse(config[computation]));
-    }
-    return rehydratedArray;
-}
 
 function getFormFields (id) {
     // TODO: spinner while waiting
@@ -165,7 +164,7 @@ function getRelatedAppDisplayFields (selectedRRField, RRArray) {
 }
 
 function getCalcFuncFields(field, calcFunctions) {
-    return isFieldTypeNumeric(field) ? 
+    return isFieldTypeNumeric(field) ?
     calcFunctions.num : calcFunctions.text;
 }
 
@@ -177,7 +176,7 @@ function passErrorHandler(computations) {
         if (!computation.calcFuncField.fn) {
             throw new Error("Please fill out all the form fields completely.");
         }
-        
+
         // if one output field handles more than one computation
         if (outputFieldCodes.indexOf(computation.outputField.code) === -1) {
             outputFieldCodes = outputFieldCodes.concat(computation.outputField.code);

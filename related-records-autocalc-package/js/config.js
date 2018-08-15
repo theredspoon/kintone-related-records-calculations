@@ -8,7 +8,7 @@
 
     // kintone.plugin.app.setConfig({});
 
-    let previouslySavedComputations = rehydrateComputations(CONFIG);
+    let previouslySavedComputations = window["myFunctions"].rehydrateComputations(CONFIG);
     console.log('previouslySavedComputations is ', previouslySavedComputations);
 
     var data = {
@@ -155,7 +155,7 @@
         methods: {
             handleRRSelection: function (selection) {
                 this.computation.displayAppRRField = selection;
-                this.computation.relatedAppId = selection.referenceTable.relatedApp.app, 
+                this.computation.relatedAppId = selection.referenceTable.relatedApp.app,
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 this.computation.relatedAppTargetField = "";
                 this.calcFuncFields = {};
@@ -228,7 +228,7 @@
         created: function () {
             if (this.computations.length === 0) {
                 this.handleAddComputation(0);
-            } 
+            }
         },
         methods: {
             count: function () {
@@ -239,10 +239,10 @@
                 let before = this.computations.slice(0, index + 1);
                 let after = this.computations.slice(index + 1, this.computations.length);
                 this.computations = [...before, {
-                    "displayAppRRField": "", 
-                    "relatedAppId":"", 
-                    "relatedAppTargetField": "", 
-                    "outputField": "", 
+                    "displayAppRRField": "",
+                    "relatedAppId":"",
+                    "relatedAppTargetField": "",
+                    "outputField": "",
                     "calcFuncField": "",
                     "id": this.count()
                 }, ...after];
