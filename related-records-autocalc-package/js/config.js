@@ -149,7 +149,7 @@
         data: function () {
             return {
                 "relatedAppDisplayFields": !!this.computation.displayAppRRField ? window["myFunctions"].getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
+                "calcFuncFields": !!this.computation.relatedAppTargetField ? window["myFunctions"].getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
             }
         },
         methods: {
@@ -163,7 +163,7 @@
             },
             handleRRFieldCodeSelection: function (selection) {
                 this.computation.relatedAppTargetField = selection;
-                this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
+                this.calcFuncFields = window["myFunctions"].getCalcFuncFields(selection, this.calcFunctions);
                 this.computation.calcFuncField = "";
             },
             handleOutputFieldCodeSelection: function (selection) {

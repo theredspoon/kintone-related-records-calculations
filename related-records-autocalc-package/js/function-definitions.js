@@ -151,16 +151,15 @@ let myFunctions = {
                 return RRArray[i].referenceTable.displayFields;
             }
         }
+    },
+    getCalcFuncFields: function (field, calcFunctions) {
+        return this.isFieldTypeNumeric(field) ?
+        calcFunctions.num : calcFunctions.text;
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function getCalcFuncFields(field, calcFunctions) {
-    return window["myFunctions"].isFieldTypeNumeric(field) ?
-    calcFunctions.num : calcFunctions.text;
-}
 
 function passErrorHandler(computations) {
     let outputFieldCodes = [];
