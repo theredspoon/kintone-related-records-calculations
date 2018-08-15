@@ -2,7 +2,7 @@
 
 var myFunctions = {
     // CALCULATION FUNCTIONS
-    "NUMCALCFUNCTIONS": {
+    NUMCALCFUNCTIONS: {
         "Sum": {name: "Sum", fn: "sum"},
         "Product": {name: "Product", fn: "product"},
         "Count": {name: "Count", fn: "totalNumber"},
@@ -10,14 +10,14 @@ var myFunctions = {
         "Median": {name: "Median", fn: "median"},
         "Count Non-zero Values": {name: "Count Non-zero Values", fn: "countNonzeroValues"}
     },
-    "TEXTCALCFUNCTIONS": {
+    TEXTCALCFUNCTIONS: {
         "Count All": {name: "Count All", fn: "totalNumber"},
         "Count Uniques": {name: "Count Uniques", fn: "countUniques"},
         "Count Non-empty Values": {name: "Count Non-empty Values", fn: "countNonemptyValues"}
     },
     // CONFIG FUNCTIONS
-    "appId": kintone.app.getId(),
-    "rehydrateComputations": function (config) {
+    appId: kintone.app.getId(),
+    rehydrateComputations: function (config) {
         let rehydratedArray = [];
         for (let computation in config) {
             rehydratedArray = rehydratedArray.concat(JSON.parse(config[computation]));
@@ -32,15 +32,14 @@ var myFunctions = {
             }).catch(function (err) {
                 console.log('getFormFields err', err);
             });
+    },
+    isFieldTypeNumeric:function (field) {
+        return field.type === "NUMBER";
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function isFieldTypeNumeric(field) {
-    return field.type === "NUMBER";
-}
 
 function isFieldTypeDisplayed (fieldType) {
     switch (fieldType) {
@@ -128,7 +127,7 @@ function getRRDisplayFieldProps (fieldList) {
 }
 
 function setOutputFields (fieldList) {
-    return Object.values(fieldList).filter(field => isFieldTypeNumeric(field))
+    return Object.values(fieldList).filter(field => window["myFunctions"].isFieldTypeNumeric(field))
         .map(field => {
             return {
                 label: field.label,
@@ -163,7 +162,7 @@ function getRelatedAppDisplayFields (selectedRRField, RRArray) {
 }
 
 function getCalcFuncFields(field, calcFunctions) {
-    return isFieldTypeNumeric(field) ?
+    return window["myFunctions"].isFieldTypeNumeric(field) ?
     calcFunctions.num : calcFunctions.text;
 }
 
