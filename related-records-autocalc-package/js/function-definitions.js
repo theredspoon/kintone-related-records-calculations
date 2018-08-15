@@ -33,49 +33,48 @@ var myFunctions = {
                 console.log('getFormFields err', err);
             });
     },
-    isFieldTypeNumeric:function (field) {
+    isFieldTypeNumeric: function (field) {
         return field.type === "NUMBER";
+    },
+    isFieldTypeDisplayed: function (fieldType) {
+        switch (fieldType) {
+            case "SINGLE_LINE_TEXT":
+            case "NUMBER":
+                return true;
+            case "RECORD_NUMBER":
+            case "__ID__":
+            case "__REVISION__":
+            case "CREATOR": // needs value.name (not just value)
+            case "CREATED_TIME":
+            case "MODIFIER": // needs value.name (not just value)
+            case "UPDATED_TIME":
+            case "CALC":
+            case "MULTI_LINE_TEXT":
+            case "RICH_TEXT":
+            case "CHECK_BOX": // needs to handle an array of values
+            case "RADIO_BUTTON":
+            case "DROP_DOWN":
+            case "MULTI_SELECT": // to pass through, needs to handle an array of values
+            case "FILE": // needs to handle an array of objects
+            case "LINK":
+            case "DATE":
+            case "TIME":
+            case "DATETIME":
+            case "USER_SELECT": // needs to handle an array of objects value[i].name
+            case "ORGANIZATION_SELECT": // needs to handle an array of objects value[i].name
+            case "GROUP_SELECT": // needs to handle an array of objects value[i].name
+            case "CATEGORY": // needs to handle an array of values
+            case "STATUS":
+            case "STATUS_ASSIGNEE": // needs to handle an array of objects value[i].name
+            case "SUBTABLE": // needs to handle an object of objects
+            default:
+                return false;
+        }
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function isFieldTypeDisplayed (fieldType) {
-    switch (fieldType) {
-        case "SINGLE_LINE_TEXT":
-        case "NUMBER":
-            return true;
-        case "RECORD_NUMBER":
-        case "__ID__":
-        case "__REVISION__":
-        case "CREATOR": // needs value.name (not just value)
-        case "CREATED_TIME":
-        case "MODIFIER": // needs value.name (not just value)
-        case "UPDATED_TIME":
-        case "CALC":
-        case "MULTI_LINE_TEXT":
-        case "RICH_TEXT":
-        case "CHECK_BOX": // needs to handle an array of values
-        case "RADIO_BUTTON":
-        case "DROP_DOWN":
-        case "MULTI_SELECT": // to pass through, needs to handle an array of values
-        case "FILE": // needs to handle an array of objects
-        case "LINK":
-        case "DATE":
-        case "TIME":
-        case "DATETIME":
-        case "USER_SELECT": // needs to handle an array of objects value[i].name
-        case "ORGANIZATION_SELECT": // needs to handle an array of objects value[i].name
-        case "GROUP_SELECT": // needs to handle an array of objects value[i].name
-        case "CATEGORY": // needs to handle an array of values
-        case "STATUS":
-        case "STATUS_ASSIGNEE": // needs to handle an array of objects value[i].name
-        case "SUBTABLE": // needs to handle an object of objects
-        default:
-            return false;
-    }
-}
 
 function getRRDisplayFieldPropsFromRelatedApp (relatedAppFields, displayField) {
     for (let relatedAppField in relatedAppFields) {
@@ -111,7 +110,7 @@ function getRRDisplayFieldProps (fieldList) {
             // turn each string in the array into an object
             displayFieldArray = displayFieldArray.map(
                 (displayField)=>getRRDisplayFieldPropsFromRelatedApp(relatedAppFieldList, displayField))
-            .filter((field)=>isFieldTypeDisplayed(field.type));
+            .filter((field)=>window["myFunctions"].isFieldTypeDisplayed(field.type));
 
             // turn the array into an object
             relatedRecord.referenceTable.displayFields = {};
