@@ -23,21 +23,20 @@ var myFunctions = {
             rehydratedArray = rehydratedArray.concat(JSON.parse(config[computation]));
         }
         return rehydratedArray;
+    },
+    getFormFields: function (id) {
+        // TODO: spinner while waiting
+        return kintone.api(kintone.api.url("/k/v1/app/form/fields", true), "GET", {"app": id})
+            .then(function (resp) {
+                return resp.properties;
+            }).catch(function (err) {
+                console.log('getFormFields err', err);
+            });
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function getFormFields (id) {
-    // TODO: spinner while waiting
-    return kintone.api(kintone.api.url("/k/v1/app/form/fields", true), "GET", {"app": id})
-        .then(function (resp) {
-            return resp.properties;
-        }).catch(function (err) {
-            console.log('getFormFields err', err);
-        });
-}
 
 function isFieldTypeNumeric(field) {
     return field.type === "NUMBER";
@@ -106,7 +105,7 @@ function getRRDisplayFieldProps (fieldList) {
     // Make API call to related apps to get additional data on RR display fields
     return Promise.all(recordsList.map(function(relatedRecord) {
         relatedAppId = relatedRecord.referenceTable.relatedApp.app;
-        return getFormFields(relatedAppId)
+        return window["myFunctions"].getFormFields(relatedAppId)
         .then(function (relatedAppFieldList) {
             displayFieldArray = relatedRecord.referenceTable.displayFields;
 
@@ -140,7 +139,7 @@ function setOutputFields (fieldList) {
 }
 
 function setConfigFields (config) {
-    return getFormFields(window["myFunctions"].appId).then(function (resp) {
+    return window["myFunctions"].getFormFields(window["myFunctions"].appId).then(function (resp) {
         getRRDisplayFieldProps(resp).then(function (records) {
             Object.assign(config, {
                 "formFields": resp,
