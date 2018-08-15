@@ -254,7 +254,7 @@
             },
             savePluginSettings: function () {
                 try {
-                    passErrorHandler(this.computations);
+                    window["myFunctions"].passErrorHandler(this.computations);
                     let dehydratedConfig = this.computations.reduce(function(acc, computation, index) {
                         acc[index] = JSON.stringify(computation);
                         return acc;

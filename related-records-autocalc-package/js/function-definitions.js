@@ -155,30 +155,28 @@ let myFunctions = {
     getCalcFuncFields: function (field, calcFunctions) {
         return this.isFieldTypeNumeric(field) ?
         calcFunctions.num : calcFunctions.text;
+    },
+    passErrorHandler: function (computations) {
+        let outputFieldCodes = [];
+        for (let computation of computations) {
+
+            // if computation form fields are incomplete
+            if (!computation.calcFuncField.fn) {
+                throw new Error("Please fill out all the form fields completely.");
+            }
+
+            // if one output field handles more than one computation
+            if (outputFieldCodes.indexOf(computation.outputField.code) === -1) {
+                outputFieldCodes = outputFieldCodes.concat(computation.outputField.code);
+            } else {
+                throw new Error("Please connect one output field to exactly one calculation.");
+            }
+
+            // if previously saved field is no longer found after the API call updates the list
+
+        };
+        return true;
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
-
-
-function passErrorHandler(computations) {
-    let outputFieldCodes = [];
-    for (let computation of computations) {
-
-        // if computation form fields are incomplete
-        if (!computation.calcFuncField.fn) {
-            throw new Error("Please fill out all the form fields completely.");
-        }
-
-        // if one output field handles more than one computation
-        if (outputFieldCodes.indexOf(computation.outputField.code) === -1) {
-            outputFieldCodes = outputFieldCodes.concat(computation.outputField.code);
-        } else {
-            throw new Error("Please connect one output field to exactly one calculation.");
-        }
-
-        // if previously saved field is no longer found after the API call updates the list
-
-    };
-    return true;
-}
