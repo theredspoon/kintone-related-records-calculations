@@ -128,26 +128,26 @@ let myFunctions = {
                     type: field.type
                 }
             });
+    },
+    setConfigFields: function (config) {
+        let self = this;
+        return self.getFormFields(self.appId).then(function (resp) {
+            self.getRRDisplayFieldProps(resp).then(function (records) {
+                Object.assign(config, {
+                    "formFields": resp,
+                    "relatedRecords": records,
+                    "outputFields": self.setOutputFields(resp)
+                })
+            })
+
+        }).catch(function (err) {
+            console.error('error in setConfigFields: ', err);
+        });
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function setConfigFields (config) {
-    return window["myFunctions"].getFormFields(window["myFunctions"].appId).then(function (resp) {
-        window["myFunctions"].getRRDisplayFieldProps(resp).then(function (records) {
-            Object.assign(config, {
-                "formFields": resp,
-                "relatedRecords": records,
-                "outputFields": window["myFunctions"].setOutputFields(resp)
-            })
-        })
-
-    }).catch(function (err) {
-        console.error('error in setConfigFields: ', err);
-    });
-}
 
 // Given a related record field, get the display app fields associated with that RR
 function getRelatedAppDisplayFields (selectedRRField, RRArray) {

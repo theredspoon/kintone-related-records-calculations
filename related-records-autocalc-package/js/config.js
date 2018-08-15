@@ -25,7 +25,7 @@
 
     console.log('data before setConfigFields is', setTimeout(() => data, 0));
 
-    setConfigFields(data);
+    window["myFunctions"].setConfigFields(data);
     // TODO: error check current data against saved data
 
     console.log('data after setConfigFields is ', data);
