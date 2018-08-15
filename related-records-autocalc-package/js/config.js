@@ -148,7 +148,7 @@
     Vue.component("computation", {
         data: function () {
             return {
-                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
+                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? window["myFunctions"].getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
                 "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
             }
         },
@@ -156,7 +156,7 @@
             handleRRSelection: function (selection) {
                 this.computation.displayAppRRField = selection;
                 this.computation.relatedAppId = selection.referenceTable.relatedApp.app,
-                this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
+                this.relatedAppDisplayFields = window["myFunctions"].getRelatedAppDisplayFields(selection, this.relatedRecords);
                 this.computation.relatedAppTargetField = "";
                 this.calcFuncFields = {};
                 this.computation.calcFuncField = "";

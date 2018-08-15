@@ -143,20 +143,19 @@ let myFunctions = {
         }).catch(function (err) {
             console.error('error in setConfigFields: ', err);
         });
+    },
+    // Given a related record field, get the display app fields associated with that RR
+    getRelatedAppDisplayFields: function (selectedRRField, RRArray) {
+        for (let i = 0, l = RRArray.length; i < l; i++) {
+            if (RRArray[i].code === selectedRRField.code) {
+                return RRArray[i].referenceTable.displayFields;
+            }
+        }
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-// Given a related record field, get the display app fields associated with that RR
-function getRelatedAppDisplayFields (selectedRRField, RRArray) {
-    for (let i = 0, l = RRArray.length; i < l; i++) {
-        if (RRArray[i].code === selectedRRField.code) {
-            return RRArray[i].referenceTable.displayFields;
-        }
-    }
-}
 
 function getCalcFuncFields(field, calcFunctions) {
     return window["myFunctions"].isFieldTypeNumeric(field) ?
