@@ -70,23 +70,22 @@ var myFunctions = {
             default:
                 return false;
         }
+    },
+    getRRDisplayFieldPropsFromRelatedApp: function (relatedAppFields, displayField) {
+        for (let relatedAppField in relatedAppFields) {
+            if (displayField === relatedAppFields[relatedAppField].code) {
+                return {
+                    label: relatedAppFields[relatedAppField].label,
+                    code: relatedAppFields[relatedAppField].code,
+                    type: relatedAppFields[relatedAppField].type
+                };
+            }
+        }
     }
 };
 window["myFunctions"] = myFunctions;
 console.log(window["myFunctions"]);
 
-
-function getRRDisplayFieldPropsFromRelatedApp (relatedAppFields, displayField) {
-    for (let relatedAppField in relatedAppFields) {
-        if (displayField === relatedAppFields[relatedAppField].code) {
-            return {
-                label: relatedAppFields[relatedAppField].label,
-                code: relatedAppFields[relatedAppField].code,
-                type: relatedAppFields[relatedAppField].type
-            };
-        }
-    }
-}
 
 function getRRDisplayFieldProps (fieldList) {
     let records = [];
@@ -109,7 +108,7 @@ function getRRDisplayFieldProps (fieldList) {
 
             // turn each string in the array into an object
             displayFieldArray = displayFieldArray.map(
-                (displayField)=>getRRDisplayFieldPropsFromRelatedApp(relatedAppFieldList, displayField))
+                (displayField)=>window["myFunctions"].getRRDisplayFieldPropsFromRelatedApp(relatedAppFieldList, displayField))
             .filter((field)=>window["myFunctions"].isFieldTypeDisplayed(field.type));
 
             // turn the array into an object
