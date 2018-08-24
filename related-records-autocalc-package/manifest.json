@@ -18,7 +18,7 @@
             "js/customize.js"
         ],
         "css": [
-            "css/customize.css"
+            "css/51-modern-default.css"
         ]
     },
     "mobile": {
