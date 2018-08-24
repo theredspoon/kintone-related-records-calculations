@@ -1,5 +1,6 @@
+"use strict";
+
 (function(PLUGIN_ID) {
-    "use strict";
     var CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
     console.log('getConfig is ', CONFIG);
 
@@ -32,13 +33,13 @@
 
     // Register Vue components (must be done before Vue instantiation)
     Vue.component("relatedRecordsSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.displayAppRRField ? this.displayAppRRField : "Select a field"
-            }
+            };
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("relatedRecordsFieldSelected", this.selected)
             }
         },
@@ -55,16 +56,16 @@
             </div>
         `,
         props: ["relatedRecords", "displayAppRRField"]
-    })
+    });
 
     Vue.component("relatedAppFieldCodeSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.relatedAppTargetField ? this.relatedAppTargetField : "Select a field"
             }
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("relatedAppFieldCodeSelected", this.selected)
             }
         },
@@ -81,7 +82,7 @@
             </div>
         `,
         props: ["relatedAppDisplayFields", "relatedAppTargetField"]
-    })
+    });
 
     /*
     Weird behavior on desktop:
@@ -94,13 +95,13 @@
     */
 
     Vue.component("outputFieldSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.outputField ? this.outputField : "Select a field"
             }
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("outputFieldSelected", this.selected)
             }
         },
@@ -117,16 +118,16 @@
             </div>
         `,
         props: ["outputFields", "outputField"]
-    })
+    });
 
     Vue.component("calcFuncFieldSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
             }
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("calcFuncFieldSelected", this.selected)
             }
         },
@@ -143,17 +144,17 @@
             </div>
         `,
         props: ["calcFuncFields", "calcFuncField"]
-    })
+    });
 
     Vue.component("computation", {
-        data: function () {
+        data: function() {
             return {
                 "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
                 "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
             }
         },
         methods: {
-            handleRRSelection: function (selection) {
+            handleRRSelection: function(selection) {
                 this.computation.displayAppRRField = selection;
                 this.computation.relatedAppId = selection.referenceTable.relatedApp.app, 
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
@@ -161,21 +162,21 @@
                 this.calcFuncFields = {};
                 this.computation.calcFuncField = "";
             },
-            handleRRFieldCodeSelection: function (selection) {
+            handleRRFieldCodeSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
                 this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
                 this.computation.calcFuncField = "";
             },
-            handleOutputFieldCodeSelection: function (selection) {
+            handleOutputFieldCodeSelection: function(selection) {
                 this.computation.outputField = selection;
             },
-            handleCalcFuncFieldSelection: function (selection) {
+            handleCalcFuncFieldSelection: function(selection) {
                 this.computation.calcFuncField = selection;
             },
-            addNewComputation: function () {
+            addNewComputation: function() {
                 this.$emit("addNewComputation", this.index)
             },
-            removeComputation: function () {
+            removeComputation: function() {
                 this.$emit("removeComputation", this.index)
             }
 
@@ -218,24 +219,24 @@
             "index",
             "length"
         ]
-    })
+    });
 
     // instantiate Vue
     let vm = new Vue({
         // initial state
         data: data,
         el: "#plugin",
-        created: function () {
+        created: function() {
             if (this.computations.length === 0) {
                 this.handleAddComputation(0);
-            } 
+            }
         },
         methods: {
-            count: function () {
-                this.counter++
+            count: function() {
+                this.counter++;
                 return this.counter;
             },
-            handleAddComputation: function (index) {
+            handleAddComputation: function(index) {
                 let before = this.computations.slice(0, index + 1);
                 let after = this.computations.slice(index + 1, this.computations.length);
                 this.computations = [...before, {
@@ -247,12 +248,12 @@
                     "id": this.count()
                 }, ...after];
             },
-            handleRemoveComputation: function (index) {
+            handleRemoveComputation: function(index) {
                 let before = this.computations.slice(0, index);
                 let after = this.computations.slice(index + 1, this.computations.length);
                 this.computations = [...before, ...after];
             },
-            savePluginSettings: function () {
+            savePluginSettings: function() {
                 try {
                     passErrorHandler(this.computations);
                     let dehydratedConfig = this.computations.reduce(function(acc, computation, index) {
