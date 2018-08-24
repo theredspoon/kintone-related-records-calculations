@@ -62,7 +62,7 @@
         data: function() {
             return {
                 selected: !!this.relatedAppTargetField ? this.relatedAppTargetField : "Select a field"
-            }
+            };
         },
         methods: {
             handleChange: function() {
@@ -98,7 +98,7 @@
         data: function() {
             return {
                 selected: !!this.outputField ? this.outputField : "Select a field"
-            }
+            };
         },
         methods: {
             handleChange: function() {
@@ -124,7 +124,7 @@
         data: function() {
             return {
                 selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
-            }
+            };
         },
         methods: {
             handleChange: function() {
@@ -150,13 +150,13 @@
         data: function() {
             return {
                 "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
-            }
+                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : ""
+            };
         },
         methods: {
             handleRRSelection: function(selection) {
                 this.computation.displayAppRRField = selection;
-                this.computation.relatedAppId = selection.referenceTable.relatedApp.app, 
+                this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 this.computation.relatedAppTargetField = "";
                 this.calcFuncFields = {};
@@ -174,10 +174,10 @@
                 this.computation.calcFuncField = selection;
             },
             addNewComputation: function() {
-                this.$emit("addNewComputation", this.index)
+                this.$emit("addNewComputation", this.index);
             },
             removeComputation: function() {
-                this.$emit("removeComputation", this.index)
+                this.$emit("removeComputation", this.index);
             }
 
         },
@@ -259,7 +259,7 @@
                     let dehydratedConfig = this.computations.reduce(function(acc, computation, index) {
                         acc[index] = JSON.stringify(computation);
                         return acc;
-                        }, {});
+                    }, {});
                     kintone.plugin.app.setConfig(dehydratedConfig);
                 } catch (error) {
                     console.error(error.message);
