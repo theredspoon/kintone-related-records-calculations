@@ -67,7 +67,7 @@
         data: function() {
             return {
                 selected: !!this.relatedAppTargetField ? this.relatedAppTargetField : "Select a field"
-            }
+            };
         },
         methods: {
             handleChange: function() {
@@ -108,7 +108,7 @@
         data: function() {
             return {
                 selected: !!this.outputField ? this.outputField : "Select a field"
-            }
+            };
         },
         methods: {
             handleChange: function() {
@@ -139,7 +139,7 @@
         data: function() {
             return {
                 selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
-            }
+            };
         },
         methods: {
             handleChange: function() {
@@ -171,12 +171,12 @@
             return {
                 "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
                 "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : ""
-            }
+            };
         },
         methods: {
             handleRRSelection: function(selection) {
                 this.computation.displayAppRRField = selection;
-                this.computation.relatedAppId = selection.referenceTable.relatedApp.app, 
+                this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 this.computation.relatedAppTargetField = "";
                 this.calcFuncFields = {};
@@ -249,7 +249,7 @@
         created: function() {
             if (this.computations.length === 0) {
                 this.handleAddComputation(0);
-            } 
+            }
         },
         methods: {
             count: function() {
