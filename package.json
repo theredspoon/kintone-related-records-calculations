@@ -6,7 +6,8 @@
     "upload": "kintone-plugin-uploader dist/plugin.zip --watch --waiting-dialog-ms 3000 --lang en",
     "develop": "npm run build -- --watch",
     "build": "kintone-plugin-packer --ppk private.ppk --out dist/plugin.zip related-records-autocalc-package",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "watch": "webpack --watch"
   },
   "devDependencies": {
     "@kintone/plugin-packer": "^1.0.1",

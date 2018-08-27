@@ -57,7 +57,7 @@
                     </div>
                 </div>
 
-                <span>Selected: {{this.displayAppRRField.code}}</span>
+                <span class="kintoneplugin-row">Selected: {{this.displayAppRRField.code}}</span>
             </div>
         `,
         props: ["relatedRecords", "displayAppRRField"]
@@ -88,7 +88,7 @@
                         </select>
                     </div>
                 </div>
-                <span>Selected: {{this.relatedAppTargetField.code}}</span>
+                <span class="kintoneplugin-row">Selected: {{this.relatedAppTargetField.code}}</span>
             </div>
         `,
         props: ["relatedAppDisplayFields", "relatedAppTargetField"]
@@ -129,7 +129,7 @@
                         </select>
                     </div>
                 </div>
-                <span>Selected: {{this.outputField.code}}</span>
+                <span class="kintoneplugin-row">Selected: {{this.outputField.code}}</span>
             </div>
         `,
         props: ["outputFields", "outputField"]
@@ -160,7 +160,7 @@
                         </select>
                     </div>
                 </div>
-                <span>Selected: {{this.calcFuncField.name}}</span>
+                <span class="kintoneplugin-row">Selected: {{this.calcFuncField.name}}</span>
             </div>
         `,
         props: ["calcFuncFields", "calcFuncField"]
@@ -202,7 +202,7 @@
 
         },
         template: `
-            <div class="kintoneplugin-row">
+            <div>
                 <button class="kintoneplugin-button-mini" @click="addNewComputation">+</button>
                 <button class="kintoneplugin-button-mini" v-if="length > 1" @click="removeComputation">-</button>
                 <relatedRecordsSelect
@@ -302,6 +302,7 @@
                 v-bind:outputFields="outputFields"
                 v-bind:relatedRecords="relatedRecords"
             ></computation>
+            <br>
             <button class="kintoneplugin-button-dialog-ok" @click="savePluginSettings">SAVE</button>
             </div>
         `

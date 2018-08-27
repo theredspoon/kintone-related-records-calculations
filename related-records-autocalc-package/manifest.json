@@ -18,7 +18,7 @@
             "js/customize.js"
         ],
         "css": [
-            "css/51-modern-default.css"
+            "css/customize.css"
         ]
     },
     "mobile": {
@@ -34,7 +34,7 @@
             "js/config.js"
         ],
         "css": [
-            "css/config.css"
+            "css/51-modern-default.css"
         ],
         "required_params": []
     }
