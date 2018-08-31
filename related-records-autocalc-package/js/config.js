@@ -1,6 +1,7 @@
 (function(PLUGIN_ID) {
     "use strict";
     
+    // Get previous settings from kintone app
     var CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
     console.log('getConfig is ', CONFIG);
 
@@ -9,6 +10,7 @@
 
     // kintone.plugin.app.setConfig({});
 
+    
     let previouslySavedComputations = rehydrateComputations(CONFIG);
     console.log('previouslySavedComputations is ', previouslySavedComputations);
 
@@ -25,7 +27,7 @@
     };
 
     console.log('data before setConfigFields is', setTimeout(() => data, 0));
-
+    
     setConfigFields(data);
     // TODO: error check current data against saved data
 
@@ -149,8 +151,8 @@
     Vue.component("computation", {
         data: function() {
             return {
-                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : ""
+                "relatedAppDisplayFields": this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
+                "calcFuncFields": this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : ""
             };
         },
         methods: {
@@ -159,6 +161,7 @@
                 this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 this.computation.relatedAppTargetField = "";
+                this.computation.outputField = ""; // <- this was missing
                 this.calcFuncFields = {};
                 this.computation.calcFuncField = "";
             },
@@ -242,7 +245,7 @@
                 this.computations = [...before, {
                     "displayAppRRField": "", 
                     "relatedAppId":"", 
-                    "relatedAppTargetField": "", 
+                    "relatedAppTargetField": "",
                     "outputField": "", 
                     "calcFuncField": "",
                     "id": this.count()
@@ -269,20 +272,20 @@
         },
         template: `
             <div>
-            <computation
-                v-for="(computation, index) in computations"
-                @addNewComputation="handleAddComputation"
-                @removeComputation="handleRemoveComputation"
-                v-bind:computation="computation"
-                v-bind:index="index"
-                v-bind:length="computations.length"
-                v-bind:key="computation.id"
-                v-bind:calcFunctions="calcFunctions"
-                v-bind:formFields="formFields"
-                v-bind:outputFields="outputFields"
-                v-bind:relatedRecords="relatedRecords"
-            ></computation>
-            <button @click="savePluginSettings">SAVE</button>
+                <computation
+                    v-for="(computation, index) in computations"
+                    @addNewComputation="handleAddComputation"
+                    @removeComputation="handleRemoveComputation"
+                    v-bind:computation="computation"
+                    v-bind:index="index"
+                    v-bind:length="computations.length"
+                    v-bind:key="computation.id"
+                    v-bind:calcFunctions="calcFunctions"
+                    v-bind:formFields="formFields"
+                    v-bind:outputFields="outputFields"
+                    v-bind:relatedRecords="relatedRecords"
+                />
+                <button @click="savePluginSettings">SAVE</button>
             </div>
         `
     });

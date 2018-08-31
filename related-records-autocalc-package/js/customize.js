@@ -181,6 +181,8 @@
                     "totalCount": true
                 };
                 
+                // pass to config.js to prepopulate
+
                 return fetchAllRecords(initialRequestParams, queryFilterSubstring, QUERYLIMIT)
                 .then(function(resp) {
                     let targetFieldValues = resp.map(function(relatedAppRecord) {
