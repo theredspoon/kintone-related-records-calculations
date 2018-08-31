@@ -69,6 +69,9 @@
         methods: {
             handleChange: function() {
                 this.$emit("relatedAppFieldCodeSelected", this.selected)
+            },
+            resetSelection: function() {
+                this.selected = "Select a field";
             }
         },
         template: `
@@ -77,7 +80,7 @@
                 <select v-model="selected" @change="handleChange">
                     <option disabled value="Select a field">Select a field</option>
                     <option v-for="value in relatedAppDisplayFields" v-bind:value="value" :key="value.code">
-                    {{value.label}} ({{value.code}})
+                        {{value.label}} ({{value.code}})
                     </option>
                 </select>
                 <span>Selected: {{this.relatedAppTargetField.code}}</span>
@@ -104,7 +107,11 @@
         },
         methods: {
             handleChange: function() {
+                console.log("selected " + this.selected);
                 this.$emit("outputFieldSelected", this.selected)
+            },
+            resetSelection: function() {
+                this.selected = "Select a field";
             }
         },
         template: `
@@ -113,7 +120,7 @@
                 <select v-model="selected" @change="handleChange">
                     <option disabled value="Select a field">Select a field</option>
                     <option v-for="value in outputFields" v-bind:value="value" :key="value.code">
-                    {{value.label}} ({{value.code}})
+                        {{value.label}} ({{value.code}})
                     </option>
                 </select>
                 <span>Selected: {{this.outputField.code}}</span>
@@ -122,7 +129,7 @@
         props: ["outputFields", "outputField"]
     });
 
-    Vue.component("calcFuncFieldSelect", {
+    Vue.component("calcFuncSelect", {
         data: function() {
             return {
                 selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
@@ -130,7 +137,10 @@
         },
         methods: {
             handleChange: function() {
-                this.$emit("calcFuncFieldSelected", this.selected)
+                this.$emit("calcFuncSelected", this.selected)
+            },
+            resetSelection: function() {
+                this.selected = "Select a field";
             }
         },
         template: `
@@ -151,19 +161,32 @@
     Vue.component("computation", {
         data: function() {
             return {
-                "relatedAppDisplayFields": this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : ""
+                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
+                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
             };
         },
         methods: {
             handleRRSelection: function(selection) {
+
+                // Set what the new related record field.
                 this.computation.displayAppRRField = selection;
+                // Set the related app id from related record.
                 this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
+
+                // Set the new related app display fields
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
+                // Set the target field for related app field to "".
                 this.computation.relatedAppTargetField = "";
-                this.computation.outputField = ""; // <- this was missing
-                this.calcFuncFields = {};
+                this.$refs.relatedAppFieldCodeSelect.resetSelection(); // reset v-model variable
+
+                // Set the outputField to empty
+                this.computation.outputField = "";
+                this.$refs.outputFieldSelect.resetSelection(); // reset v-model variable for outputfield
+                
+                // Clear calcFuncField and calcFuncFields
                 this.computation.calcFuncField = "";
+                this.calcFuncFields = {};
+                this.$refs.calcFuncSelect.resetSelection(); // reset v-model variable for calcfuncField
             },
             handleRRFieldCodeSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
@@ -173,7 +196,7 @@
             handleOutputFieldCodeSelection: function(selection) {
                 this.computation.outputField = selection;
             },
-            handleCalcFuncFieldSelection: function(selection) {
+            handleCalcFuncSelection: function(selection) {
                 this.computation.calcFuncField = selection;
             },
             addNewComputation: function() {
@@ -188,6 +211,7 @@
             <div>
                 <button @click="addNewComputation">+</button>
                 <button v-if="length > 1" @click="removeComputation">-</button>
+                
                 <relatedRecordsSelect
                     v-bind:relatedRecords="relatedRecords"
                     v-bind:displayAppRRField="computation.displayAppRRField"
@@ -198,19 +222,22 @@
                     v-bind:relatedAppDisplayFields="relatedAppDisplayFields"
                     v-bind:relatedAppTargetField="computation.relatedAppTargetField"
                     @relatedAppFieldCodeSelected="handleRRFieldCodeSelection"
+                    ref="relatedAppFieldCodeSelect"
                 ></relatedAppFieldCodeSelect>
 
                 <outputFieldSelect
                     v-bind:outputFields="outputFields"
                     v-bind:outputField="computation.outputField"
                     @outputFieldSelected="handleOutputFieldCodeSelection"
+                    ref="outputFieldSelect"
                 ></outputFieldSelect>
 
-                <calcFuncFieldSelect
+                <calcFuncSelect
                     v-bind:calcFuncFields="calcFuncFields"
                     v-bind:calcFuncField="computation.calcFuncField"
-                    @calcFuncFieldSelected="handleCalcFuncFieldSelection"
-                ></calcFuncFieldSelect>
+                    @calcFuncSelected="handleCalcFuncSelection"
+                    ref="calcFuncSelect"
+                ></calcFuncSelect>
             </div>
         `,
         props: [
