@@ -251,6 +251,8 @@
         ]
     });
 
+    // todo: public function to clear selections based on component passed in.
+
     // instantiate Vue
     let vm = new Vue({
         // initial state
