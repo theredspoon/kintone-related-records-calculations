@@ -171,40 +171,14 @@
             "dropdownEntries",
             "entrySelection"
         ],
-        // computed: {
-            // selected: {
-            //     get: function() {
-            //         if (this.selection == "Select a field") {
-            //             return this.selection;
-            //         }
-                    
-            //         if (this.selection.name != null) {
-            //             return this.selection.name;
-            //         } else if (this.selection.code != null) {
-            //             return this.selection.code;
-            //         }
-            //     },
-            //     set: function(newValue) {
-            //         if (newValue == "Select a field") {
-            //             this.selection = "Select a field";
-            //         }
-
-            //         if (this.selection.name != null) {
-            //             this.selection.name = newValue;
-            //         } else if (this.selection.code != null) {
-            //             this.selection.code = newValue;
-            //         }
-            //     }
-            // }
-        // },
-        // watch: {
-        //     selected: function (newSelection) {
-        //         console.log(this.onChangeFunctionName)
-        //         this.$emit(this.onChangeFunctionName, this.selection);
-        //     }
-        // },
+        watch: {
+            entrySelection: function (selection) {
+                this.selected = !!this.entrySelection ? this.entrySelection : "Select a field";
+            }
+        },
         methods: {
             resetSelection: function() {
+                console.log("ResetSelection called");
                 this.selected = "Select a field";
             },
             handleChange: function() {
@@ -265,6 +239,7 @@
         ],
         methods: {
             handleRRSelection: function(selection) {
+
                 // Set new related record selection
                 this.computation.displayAppRRField = selection;
                 // Set the related app Id from the selected related record.
@@ -274,21 +249,18 @@
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 // Set selected relatedAppTargetField to "".
                 this.computation.relatedAppTargetField = "";
-                // this.$refs.relatedAppFieldCodeSelect.resetSelection(); // reset v-model variable
+                // this.$refs.RAField.resetSelection(); // reset v-model variable
 
                 // Clear calcFuncField and calcFuncFields
                 this.computation.calcFuncField = "";
                 this.calcFuncFields = {};
-                // this.$refs.calcFuncSelect.resetSelection(); // reset v-model variable for calcfuncField
-
-                // Set the outputField to empty
-                this.computation.outputField = "";
-                // this.$refs.outputFieldSelect.resetSelection(); // reset v-model variable for outputfield
+                // this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
             },
             handleRAFieldSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
                 this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
                 this.computation.calcFuncField = "";
+                // this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
             },
             handleOutputFieldCodeSelection: function(selection) {
                 this.computation.outputField = selection;
@@ -312,32 +284,33 @@
                     dropdownName="RRField"
                     v-bind:dropdownTitle="this.dropdownTitles.RRField"
                     v-bind:dropdownEntries="this.relatedRecords"
-                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.RRField"
                     v-bind:entrySelection="computation.displayAppRRField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.RRField"
                     @related-records-selected="handleRRSelection"
+                    ref="RRField"
                 ></optionSelectDropdown>
 
-                <div v-if="true">
+                <div v-if="this.computation.displayAppRRField">
                     <optionSelectDropdown
                         dropdown-name="RAField"
                         v-bind:dropdown-title="this.dropdownTitles.RAField"
                         v-bind:dropdownEntries="this.relatedAppDisplayFields"
-                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
                         v-bind:entrySelection="computation.relatedAppTargetField"
+                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
                         @related-app-field-selected="handleRAFieldSelection"
-                        ref="handleRAFieldSelection"
+                        ref="RAField"
                     ></optionSelectDropdown>
                 </div>
 
-                <div v-if="true">
+                <div v-if="this.computation.relatedAppTargetField">
                     <optionSelectDropdown
                         dropdown-name="CFField"
                         v-bind:dropdown-title="this.dropdownTitles.CFField"
                         v-bind:dropdownEntries="this.calcFuncFields"
-                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
                         v-bind:entrySelection="computation.calcFuncField"
+                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
                         @calc-func-selected="handleCalcFuncSelection"
-                        ref="calcFuncSelect"
+                        ref="CFField"
                     ></optionSelectDropdown>
                 </div>
 
@@ -345,10 +318,9 @@
                     dropdown-name="OField"
                     v-bind:dropdown-title="this.dropdownTitles.OField"
                     v-bind:dropdownEntries="this.outputFields"
-                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
                     v-bind:entrySelection="computation.outputField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
                     @output-field-selected="handleOutputFieldCodeSelection"
-                    ref="outputFieldSelect"
                 ></optionSelectDropdown>
             </div>
         `
