@@ -161,7 +161,7 @@
     Vue.component('optionSelectDropdown', {
         data: function() {
             return {
-                selection: !!this.entrySelection ? this.entrySelection : "Select a field",
+                selected: !!this.entrySelection ? this.entrySelection : "Select a field",
             }
         },
         props: [
@@ -171,53 +171,65 @@
             "dropdownEntries",
             "entrySelection"
         ],
-        computed: {
-            selected: {
-                get: function() {
-                    if (this.selection == "Select a field") {
-                        return this.selection;
-                    }
+        // computed: {
+            // selected: {
+            //     get: function() {
+            //         if (this.selection == "Select a field") {
+            //             return this.selection;
+            //         }
                     
-                    if (this.selection.name != null) {
-                        return this.selection.name;
-                    } else if (this.selection.code != null) {
-                        return this.selection.code;
-                    }
-                },
-                set: function(newValue) {
-                    if (newValue == "Select a field") {
-                        this.selection = "Select a field";
-                    }
+            //         if (this.selection.name != null) {
+            //             return this.selection.name;
+            //         } else if (this.selection.code != null) {
+            //             return this.selection.code;
+            //         }
+            //     },
+            //     set: function(newValue) {
+            //         if (newValue == "Select a field") {
+            //             this.selection = "Select a field";
+            //         }
 
-                    if (this.selection.name != null) {
-                        this.selection.name = newValue;
-                    } else if (this.selection.code != null) {
-                        this.selection.code = newValue;
-                    }
-                }
-            }
-        },
-        watch: {
-            selected: function (newSelection) {
-                console.log(this.onChangeFunctionName)
-                this.$emit(this.onChangeFunctionName, newSelection);
-            }
-        },
+            //         if (this.selection.name != null) {
+            //             this.selection.name = newValue;
+            //         } else if (this.selection.code != null) {
+            //             this.selection.code = newValue;
+            //         }
+            //     }
+            // }
+        // },
+        // watch: {
+        //     selected: function (newSelection) {
+        //         console.log(this.onChangeFunctionName)
+        //         this.$emit(this.onChangeFunctionName, this.selection);
+        //     }
+        // },
         methods: {
             resetSelection: function() {
-                console.log("resetSelection called");
                 this.selected = "Select a field";
-            }
+            },
+            handleChange: function() {
+                console.log(this.onChangeFunctionName);
+                this.$emit(this.onChangeFunctionName, this.selected);
+            },
+            // entryKey: function(entry) {
+            //     if (entry.code == null) {
+            //         return entry.fn;
+            //     }
+
+            //     return entry.code;
+            // }
         },
         template: `
             <div>
                 {{ dropdownTitle }}
-                <select v-model="selected">
+                <select v-model="selected" @change="handleChange">
+
                     <option disabled value="Select a field">Select a field</option>
-                    <option v-for="entry in dropdownEntries">
+                    <option v-for="entry in dropdownEntries" v-bind:value="entry" :key="entry.fn">
                         <span v-if="entry.code != null">{{ entry.code }}</span>
                         <span v-else>{{ entry.name }}</span>
                     </option>
+
                 </select>
             </div>
         `
@@ -253,27 +265,25 @@
         ],
         methods: {
             handleRRSelection: function(selection) {
-                console.log("handleRRSelection");
-                // Set what the new related record field.
+                // Set new related record selection
                 this.computation.displayAppRRField = selection;
-                // Set the related app id from related record.
+                // Set the related app Id from the selected related record.
                 this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
 
-                // Set the new related app display fields
+                // Set RAFIELD to the related fields from the selected related record
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
-                console.log(this.relatedAppDisplayFields);
-                // Set the target field for related app field to "".
+                // Set selected relatedAppTargetField to "".
                 this.computation.relatedAppTargetField = "";
                 // this.$refs.relatedAppFieldCodeSelect.resetSelection(); // reset v-model variable
 
-                // Set the outputField to empty
-                this.computation.outputField = "";
-                // this.$refs.outputFieldSelect.resetSelection(); // reset v-model variable for outputfield
-                
                 // Clear calcFuncField and calcFuncFields
                 this.computation.calcFuncField = "";
                 this.calcFuncFields = {};
                 // this.$refs.calcFuncSelect.resetSelection(); // reset v-model variable for calcfuncField
+
+                // Set the outputField to empty
+                this.computation.outputField = "";
+                // this.$refs.outputFieldSelect.resetSelection(); // reset v-model variable for outputfield
             },
             handleRAFieldSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
@@ -314,7 +324,7 @@
                         v-bind:dropdownEntries="this.relatedAppDisplayFields"
                         v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
                         v-bind:entrySelection="computation.relatedAppTargetField"
-                        @relatedAppFieldSelected="handleRAFieldSelection"
+                        @related-app-field-selected="handleRAFieldSelection"
                         ref="handleRAFieldSelection"
                     ></optionSelectDropdown>
                 </div>
@@ -326,7 +336,7 @@
                         v-bind:dropdownEntries="this.calcFuncFields"
                         v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
                         v-bind:entrySelection="computation.calcFuncField"
-                        @calcFuncSelected="handleCalcFuncSelection"
+                        @calc-func-selected="handleCalcFuncSelection"
                         ref="calcFuncSelect"
                     ></optionSelectDropdown>
                 </div>
@@ -337,7 +347,7 @@
                     v-bind:dropdownEntries="this.outputFields"
                     v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
                     v-bind:entrySelection="computation.outputField"
-                    @outputFieldSelected="handleOutputFieldCodeSelection"
+                    @output-field-selected="handleOutputFieldCodeSelection"
                     ref="outputFieldSelect"
                 ></optionSelectDropdown>
             </div>
