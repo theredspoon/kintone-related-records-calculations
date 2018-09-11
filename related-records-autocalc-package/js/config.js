@@ -158,16 +158,102 @@
         props: ["calcFuncFields", "calcFuncField"]
     });
 
-    Vue.component("computation", {
+    Vue.component('optionSelectDropdown', {
+        data: function() {
+            return {
+                selection: !!this.entrySelection ? this.entrySelection : "Select a field",
+            }
+        },
+        props: [
+            "dropdownName",
+            "dropdownTitle",
+            "onChangeFunctionName",
+            "dropdownEntries",
+            "entrySelection"
+        ],
+        computed: {
+            selected: {
+                get: function() {
+                    if (this.selection == "Select a field") {
+                        return this.selection;
+                    }
+                    
+                    if (this.selection.name != null) {
+                        return this.selection.name;
+                    } else if (this.selection.code != null) {
+                        return this.selection.code;
+                    }
+                },
+                set: function(newValue) {
+                    if (newValue == "Select a field") {
+                        this.selection = "Select a field";
+                    }
+
+                    if (this.selection.name != null) {
+                        this.selection.name = newValue;
+                    } else if (this.selection.code != null) {
+                        this.selection.code = newValue;
+                    }
+                }
+            }
+        },
+        watch: {
+            selected: function (newSelection) {
+                console.log(this.onChangeFunctionName)
+                this.$emit(this.onChangeFunctionName, newSelection);
+            }
+        },
+        methods: {
+            resetSelection: function() {
+                console.log("resetSelection called");
+                this.selected = "Select a field";
+            }
+        },
+        template: `
+            <div>
+                {{ dropdownTitle }}
+                <select v-model="selected">
+                    <option disabled value="Select a field">Select a field</option>
+                    <option v-for="entry in dropdownEntries">
+                        <span v-if="entry.code != null">{{ entry.code }}</span>
+                        <span v-else>{{ entry.name }}</span>
+                    </option>
+                </select>
+            </div>
+        `
+    });
+
+    Vue.component("computationItem", {
         data: function() {
             return {
                 "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
                 "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
+                dropdownTitles: {
+                    RRField: "Pick a related records field",
+                    RAField: "Pick a field from the related app to calculate",
+                    CFField: "Pick a calculation to use on the target related records field",
+                    OField: "Pick a field from the display app to output the computation"
+                },
+                onChangeFunctionNames: {
+                    RRField: "related-records-selected",
+                    RAField: "related-app-field-selected",
+                    CFField: "calc-func-selected",
+                    OField: "output-field-selected"
+                }
             };
         },
+        props: [
+            "calcFunctions",
+            "formFields",
+            "relatedRecords",
+            "outputFields",
+            "computation",
+            "index",
+            "length"
+        ],
         methods: {
             handleRRSelection: function(selection) {
-
+                console.log("handleRRSelection");
                 // Set what the new related record field.
                 this.computation.displayAppRRField = selection;
                 // Set the related app id from related record.
@@ -175,20 +261,21 @@
 
                 // Set the new related app display fields
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
+                console.log(this.relatedAppDisplayFields);
                 // Set the target field for related app field to "".
                 this.computation.relatedAppTargetField = "";
-                this.$refs.relatedAppFieldCodeSelect.resetSelection(); // reset v-model variable
+                // this.$refs.relatedAppFieldCodeSelect.resetSelection(); // reset v-model variable
 
                 // Set the outputField to empty
                 this.computation.outputField = "";
-                this.$refs.outputFieldSelect.resetSelection(); // reset v-model variable for outputfield
+                // this.$refs.outputFieldSelect.resetSelection(); // reset v-model variable for outputfield
                 
                 // Clear calcFuncField and calcFuncFields
                 this.computation.calcFuncField = "";
                 this.calcFuncFields = {};
-                this.$refs.calcFuncSelect.resetSelection(); // reset v-model variable for calcfuncField
+                // this.$refs.calcFuncSelect.resetSelection(); // reset v-model variable for calcfuncField
             },
-            handleRRFieldCodeSelection: function(selection) {
+            handleRAFieldSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
                 this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
                 this.computation.calcFuncField = "";
@@ -205,50 +292,56 @@
             removeComputation: function() {
                 this.$emit("removeComputation", this.index);
             }
-
         },
         template: `
             <div>
                 <button @click="addNewComputation">+</button>
                 <button v-if="length > 1" @click="removeComputation">-</button>
                 
-                <relatedRecordsSelect
-                    v-bind:relatedRecords="relatedRecords"
-                    v-bind:displayAppRRField="computation.displayAppRRField"
-                    @relatedRecordsFieldSelected="handleRRSelection"
-                ></relatedRecordsSelect>
+                <optionSelectDropdown
+                    dropdownName="RRField"
+                    v-bind:dropdownTitle="this.dropdownTitles.RRField"
+                    v-bind:dropdownEntries="this.relatedRecords"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.RRField"
+                    v-bind:entrySelection="computation.displayAppRRField"
+                    @related-records-selected="handleRRSelection"
+                ></optionSelectDropdown>
 
-                <relatedAppFieldCodeSelect
-                    v-bind:relatedAppDisplayFields="relatedAppDisplayFields"
-                    v-bind:relatedAppTargetField="computation.relatedAppTargetField"
-                    @relatedAppFieldCodeSelected="handleRRFieldCodeSelection"
-                    ref="relatedAppFieldCodeSelect"
-                ></relatedAppFieldCodeSelect>
+                <div v-if="true">
+                    <optionSelectDropdown
+                        dropdown-name="RAField"
+                        v-bind:dropdown-title="this.dropdownTitles.RAField"
+                        v-bind:dropdownEntries="this.relatedAppDisplayFields"
+                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
+                        v-bind:entrySelection="computation.relatedAppTargetField"
+                        @relatedAppFieldSelected="handleRAFieldSelection"
+                        ref="handleRAFieldSelection"
+                    ></optionSelectDropdown>
+                </div>
 
-                <outputFieldSelect
-                    v-bind:outputFields="outputFields"
-                    v-bind:outputField="computation.outputField"
+                <div v-if="true">
+                    <optionSelectDropdown
+                        dropdown-name="CFField"
+                        v-bind:dropdown-title="this.dropdownTitles.CFField"
+                        v-bind:dropdownEntries="this.calcFuncFields"
+                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
+                        v-bind:entrySelection="computation.calcFuncField"
+                        @calcFuncSelected="handleCalcFuncSelection"
+                        ref="calcFuncSelect"
+                    ></optionSelectDropdown>
+                </div>
+
+                <optionSelectDropdown
+                    dropdown-name="OField"
+                    v-bind:dropdown-title="this.dropdownTitles.OField"
+                    v-bind:dropdownEntries="this.outputFields"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
+                    v-bind:entrySelection="computation.outputField"
                     @outputFieldSelected="handleOutputFieldCodeSelection"
                     ref="outputFieldSelect"
-                ></outputFieldSelect>
-
-                <calcFuncSelect
-                    v-bind:calcFuncFields="calcFuncFields"
-                    v-bind:calcFuncField="computation.calcFuncField"
-                    @calcFuncSelected="handleCalcFuncSelection"
-                    ref="calcFuncSelect"
-                ></calcFuncSelect>
+                ></optionSelectDropdown>
             </div>
-        `,
-        props: [
-            "calcFunctions",
-            "formFields",
-            "relatedRecords",
-            "outputFields",
-            "computation",
-            "index",
-            "length"
-        ]
+        `
     });
 
     // todo: public function to clear selections based on component passed in.
@@ -301,7 +394,7 @@
         },
         template: `
             <div>
-                <computation
+                <computationItem
                     v-for="(computation, index) in computations"
                     @addNewComputation="handleAddComputation"
                     @removeComputation="handleRemoveComputation"
