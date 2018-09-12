@@ -18,26 +18,24 @@
             "num": NUMCALCFUNCTIONS,
             "text": TEXTCALCFUNCTIONS
         },
-        "formFields": {},
-        "relatedRecords": previouslySavedComputations.map(comp => comp.displayAppRRField) || [],
-        "outputFields": previouslySavedComputations.map(comp => comp.outputField) || [],
+        // "formFields": {},
+        // "relatedRecords": previouslySavedComputations.map(comp => comp.displayAppRRField) || [],
+        // "outputFields": previouslySavedComputations.map(comp => comp.outputField) || [],
         "counter": previouslySavedComputations.length || 0,
         "computations": previouslySavedComputations || [] // settings to pass into customize.js will come from here
     };
 
     // We have nothing but "Related_Records" in the relatedrecords array.
     console.log("After inital rehydration related records: ");
-    console.log(data.relatedRecords);
-
-    // console.log('data before setConfigFields is', setTimeout(() => data, 0));
+    console.log(data);
     
-    setConfigFields(data);
+
+    setConfigFields(data).then(function() {
+        console.log("After setconfigfields related records: ");
+        console.log(data);
+    });
+
     // TODO: error check current data against saved data
-
-    console.log("After setconfigfields related records: ");
-    console.log(data.relatedRecords);
-
-    // console.log('data after setConfigFields is ', data);
 
     Vue.component('optionSelectDropdown', {
         data: function() {
