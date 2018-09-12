@@ -3,16 +3,15 @@
     
     // Get previous settings from kintone app
     var CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
-    console.log('getConfig is ', CONFIG);
+    // console.log('getConfig is ', CONFIG);
 
     // TODO: pass CONFIG into <select> options to prepopulate
     // before making API call to update any field changes
 
     // kintone.plugin.app.setConfig({});
 
-    
     let previouslySavedComputations = rehydrateComputations(CONFIG);
-    console.log('previouslySavedComputations is ', previouslySavedComputations);
+    // console.log('previouslySavedComputations is ', previouslySavedComputations);
 
     var data = {
         "calcFunctions": {
@@ -26,137 +25,19 @@
         "computations": previouslySavedComputations || [] // settings to pass into customize.js will come from here
     };
 
-    console.log('data before setConfigFields is', setTimeout(() => data, 0));
+    // We have nothing but "Related_Records" in the relatedrecords array.
+    console.log("After inital rehydration related records: ");
+    console.log(data.relatedRecords);
+
+    // console.log('data before setConfigFields is', setTimeout(() => data, 0));
     
     setConfigFields(data);
     // TODO: error check current data against saved data
 
-    console.log('data after setConfigFields is ', data);
+    console.log("After setconfigfields related records: ");
+    console.log(data.relatedRecords);
 
-    // Register Vue components (must be done before Vue instantiation)
-    Vue.component("relatedRecordsSelect", {
-        data: function() {
-            return {
-                selected: !!this.displayAppRRField ? this.displayAppRRField : "Select a field"
-            };
-        },
-        methods: {
-            handleChange: function() {
-                this.$emit("relatedRecordsFieldSelected", this.selected)
-            }
-        },
-        template: `
-            <div>
-                Pick a related records field
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="record in relatedRecords" v-bind:value="record" :key="record.code">
-                        {{record.label}} ({{record.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.displayAppRRField.code}}</span>
-            </div>
-        `,
-        props: ["relatedRecords", "displayAppRRField"]
-    });
-
-    Vue.component("relatedAppFieldCodeSelect", {
-        data: function() {
-            return {
-                selected: !!this.relatedAppTargetField ? this.relatedAppTargetField : "Select a field"
-            };
-        },
-        methods: {
-            handleChange: function() {
-                this.$emit("relatedAppFieldCodeSelected", this.selected)
-            },
-            resetSelection: function() {
-                this.selected = "Select a field";
-            }
-        },
-        template: `
-            <div>
-                Pick a field from the related app to calculate.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in relatedAppDisplayFields" v-bind:value="value" :key="value.code">
-                        {{value.label}} ({{value.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.relatedAppTargetField.code}}</span>
-            </div>
-        `,
-        props: ["relatedAppDisplayFields", "relatedAppTargetField"]
-    });
-
-    /*
-    Weird behavior on desktop:
-    1) change RR field to option #1
-    2) change display app target field
-    3) change RR field to option #2
-    4) change RR field to option #1
-    Problem: display app target field doesn't reset
-    Bigger problem: outputField gets stuck
-    */
-
-    Vue.component("outputFieldSelect", {
-        data: function() {
-            return {
-                selected: !!this.outputField ? this.outputField : "Select a field"
-            };
-        },
-        methods: {
-            handleChange: function() {
-                console.log("selected " + this.selected);
-                this.$emit("outputFieldSelected", this.selected)
-            },
-            resetSelection: function() {
-                this.selected = "Select a field";
-            }
-        },
-        template: `
-            <div>
-                Pick a field from the display app to output the computation.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in outputFields" v-bind:value="value" :key="value.code">
-                        {{value.label}} ({{value.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.outputField.code}}</span>
-            </div>
-        `,
-        props: ["outputFields", "outputField"]
-    });
-
-    Vue.component("calcFuncSelect", {
-        data: function() {
-            return {
-                selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
-            };
-        },
-        methods: {
-            handleChange: function() {
-                this.$emit("calcFuncSelected", this.selected)
-            },
-            resetSelection: function() {
-                this.selected = "Select a field";
-            }
-        },
-        template: `
-            <div>
-                Pick a calculation to use on the target related records field.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in calcFuncFields" v-bind:value="value" :key="value.fn">
-                    {{value.name}}
-                    </option>
-                </select>
-                <span>Selected: {{this.calcFuncField.name}}</span>
-            </div>
-        `,
-        props: ["calcFuncFields", "calcFuncField"]
-    });
+    // console.log('data after setConfigFields is ', data);
 
     Vue.component('optionSelectDropdown', {
         data: function() {
@@ -169,37 +50,54 @@
             "dropdownTitle",
             "onChangeFunctionName",
             "dropdownEntries",
+            "referenceEntries",
             "entrySelection"
         ],
         watch: {
             entrySelection: function (selection) {
                 this.selected = !!this.entrySelection ? this.entrySelection : "Select a field";
+            },
+            selected: function(selection) {
+                this.$emit(this.onChangeFunctionName, this.selected);
             }
         },
         methods: {
             resetSelection: function() {
-                console.log("ResetSelection called");
+                // console.log("ResetSelection called");
                 this.selected = "Select a field";
             },
-            handleChange: function() {
-                console.log(this.onChangeFunctionName);
-                this.$emit(this.onChangeFunctionName, this.selected);
-            },
-            // entryKey: function(entry) {
-            //     if (entry.code == null) {
-            //         return entry.fn;
-            //     }
-
-            //     return entry.code;
+            // handleChange: function() {
+            //     this.$emit(this.onChangeFunctionName, this.selected);
             // }
+        },
+        mounted: function() {
+            // Handle a case where the entrySelection value does not exist in dropdownEntries array.
+            let reset = true;
+
+            // console.log(this.referenceEntries);
+
+            for (var i = 0; i < this.referenceEntries.length; i++) {
+                if (this.referenceEntries[i] === this.entrySelection) {
+                    reset = false;
+                    break;
+                }
+            }
+
+            console.log("reset: " + reset);
+
+            if (reset) {
+                this.resetSelection();
+                console.log(this.selected);
+                console.log(this.onChangeFunctionName);
+                // this.$emit(this.onChangeFunctionName, this.selected);
+            }
         },
         template: `
             <div>
                 {{ dropdownTitle }}
-                <select v-model="selected" @change="handleChange">
-
+                <select v-model="selected">
                     <option disabled value="Select a field">Select a field</option>
-                    <option v-for="entry in dropdownEntries" v-bind:value="entry" :key="entry.fn">
+                    <option v-for="entry in dropdownEntries" v-bind:value="entry">
                         <span v-if="entry.code != null">{{ entry.code }}</span>
                         <span v-else>{{ entry.name }}</span>
                     </option>
@@ -279,17 +177,19 @@
             <div>
                 <button @click="addNewComputation">+</button>
                 <button v-if="length > 1" @click="removeComputation">-</button>
-                
+                     
                 <optionSelectDropdown
                     dropdownName="RRField"
                     v-bind:dropdownTitle="this.dropdownTitles.RRField"
                     v-bind:dropdownEntries="this.relatedRecords"
+                    v-bind:referenceEntries="this.relatedRecords"
                     v-bind:entrySelection="computation.displayAppRRField"
                     v-bind:onChangeFunctionName="this.onChangeFunctionNames.RRField"
                     @related-records-selected="handleRRSelection"
                     ref="RRField"
                 ></optionSelectDropdown>
 
+                <!--
                 <div v-if="this.computation.displayAppRRField">
                     <optionSelectDropdown
                         dropdown-name="RAField"
@@ -322,21 +222,44 @@
                     v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
                     @output-field-selected="handleOutputFieldCodeSelection"
                 ></optionSelectDropdown>
+                -->
             </div>
         `
     });
 
     // todo: public function to clear selections based on component passed in.
 
-    // instantiate Vue
+    // Vue root instance
     let vm = new Vue({
-        // initial state
         data: data,
         el: "#plugin",
         created: function() {
             if (this.computations.length === 0) {
                 this.handleAddComputation(0);
             }
+
+            console.log("created vm related records: ");
+            console.log(this.relatedRecords);
+        },
+        beforeMount: function() {
+            console.log("beforeMount vm related records: ");
+            console.log(this.relatedRecords);
+        },
+        mounted: function() {
+            console.log("mounted vm related records: ");
+            console.log(this.relatedRecords);
+        },
+        updated: function() {
+            console.log("updated vm related records: ");
+            console.log(this.relatedRecords);
+        },
+        beforeUpdate: function() {
+            console.log("beforeUpdate vm related records: ");
+            console.log(this.relatedRecords);
+        },
+        beforeDestory: function() {
+            console.log("beforeDestroy vm related records: ");
+            console.log(this.relatedRecords);
         },
         methods: {
             count: function() {
@@ -372,6 +295,14 @@
                     console.error(error.message);
                     alert(error.message);
                 }
+            },
+            cancelPluginSettings: function() {
+                try {
+                    kintone.plugin.app.setConfig(CONFIG);
+                } catch (error) {
+                    console.error(error.message);
+                    alart(error.message);
+                }
             }
         },
         template: `
@@ -389,7 +320,8 @@
                     v-bind:outputFields="outputFields"
                     v-bind:relatedRecords="relatedRecords"
                 />
-                <button @click="savePluginSettings">SAVE</button>
+                <button @click="savePluginSettings">Save</button>
+                <button @click="cancelPluginSettings">Cancel</button>
             </div>
         `
     });
