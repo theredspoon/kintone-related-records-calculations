@@ -142,7 +142,8 @@ function setConfigFields (config) {
             Object.assign(config, {
                 "formFields": resp,
                 "relatedRecords": records,
-                "outputFields": setOutputFields(resp)
+                "outputFields": setOutputFields(resp),
+                "fullyLoaded": true
             });
         });
     }).catch(function(err) {

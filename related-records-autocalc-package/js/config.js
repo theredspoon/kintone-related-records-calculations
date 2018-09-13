@@ -8,7 +8,6 @@
     // before making API call to update any field changes
 
     let previouslySavedComputations = rehydrateComputations(CONFIG);
-    // console.log('previouslySavedComputations is ', previouslySavedComputations);
 
     var data = {
         "calcFunctions": {
@@ -19,13 +18,9 @@
         "relatedRecords": previouslySavedComputations.map(comp => comp.displayAppRRField) || [],
         "outputFields": previouslySavedComputations.map(comp => comp.outputField) || [],
         "counter": previouslySavedComputations.length || 0,
-        "computations": previouslySavedComputations || []
+        "computations": previouslySavedComputations || [],
+        "fullyLoaded": false
     };
-
-    // We have nothing but "Related_Records" in the relatedrecords array.
-    console.log("After inital rehydration related records: ");
-    console.log(data);
-    
 
     setConfigFields(data)
 
@@ -35,7 +30,8 @@
             "dropdownTitle",
             "onChangeFunctionName",
             "dropdownEntries",
-            "entrySelection"
+            "entrySelection",
+            "previouslySelected"
         ],
         data: function() {
             return {
@@ -70,10 +66,19 @@
     });
 
     Vue.component("computationItem", {
+        props: [
+            "calcFunctions",
+            "formFields",
+            "relatedRecords",
+            "outputFields",
+            "computation",
+            "index",
+            "length"
+        ],
         data: function() {
             return {
-                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
+                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : [],
+                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : [],
                 dropdownTitles: {
                     RRField: "Pick a related records field",
                     RAField: "Pick a field from the related app to calculate",
@@ -85,19 +90,79 @@
                     RAField: "related-app-field-selected",
                     CFField: "calc-func-selected",
                     OField: "output-field-selected"
+                },
+                errorPreviousSelections: {
+                    RRField: null,
+                    RAField: null,
+                    CFField: null,
+                    OField: null
                 }
             };
         },
-        props: [
-            "calcFunctions",
-            "formFields",
-            "relatedRecords",
-            "outputFields",
-            "computation",
-            "index",
-            "length"
-        ],
+
+        // Runs rights before the component is attached to the DOM
+        mounted: function() {
+
+            // Check if the data is fully loaded
+            if (!data.fullyLoaded) {
+                console.error("computationItem mounted before data variable was fully loaded.")
+            }
+
+            // Error check all fields to ensure that their field_code still exists in the app (except for calcFuncations)
+            // Error check RRField
+            if (this.errorsInField(this.relatedRecords, this.computation.displayAppRRField)) {
+                this.errorPreviousSelections.RRField = this.computation.displayAppRRField;
+                this.computation.displayAppRRField = "";
+            }
+
+            // Error check RAField
+            if (this.relatedAppDisplayFields) {
+                if (this.errorsInField(this.relatedAppDisplayFields, this.computation.relatedAppTargetField)) {
+                    this.errorPreviousSelections.RAField = this.computation.relatedAppDisplayField;
+                    this.computation.relatedAppDisplayField = "";
+                }
+            }
+            
+            // Error check OField
+            if (this.errorsInField(this.outputFields, this.computation.outputField)) {
+                this.errorPreviousSelections.OField = this.computation.outputField;
+                this.computation.outputField = "";
+            }
+        },
         methods: {
+            
+            /*
+            Given a collection of "entries" for a dropdown and the previuslySelected entry that was saved
+            Figure out if the previouslySelected entry still exists in the collection.
+            Error if previouslySelected can't be found, other wise no error.
+            */
+            errorsInField(fieldEntries, previouslySelected) {
+
+                // Is fieldEntries an array?
+                if (Array.isArray(fieldEntries)) {
+
+                    // Iterate through the array and compare each object with previouslySelected
+                    for (var i = 0; i < fieldEntries.length; i++) {
+
+                        // If previouslySelected is equal to the object in the array, return false for no error
+                        if(fieldEntries[i].label == previouslySelected.label && fieldEntries[i].code == previouslySelected.code) {
+                            return false;
+                        }
+                    }
+                } else {
+
+                    // Iterate through the objects opererties and compare each property with previouslySelected
+                    for (var property in this.fieldEntries) {
+
+                        // If previouslySelected is equal to the object in the array, return false for no error
+                        if(property.label == previouslySelected.label && property.code == previouslySelected.code) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            },
             handleRRSelection: function(selection) {
 
                 // Set new related record selection
@@ -145,6 +210,7 @@
                     v-bind:dropdownTitle="this.dropdownTitles.RRField"
                     v-bind:dropdownEntries="this.relatedRecords"
                     v-bind:entrySelection="computation.displayAppRRField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.RRField"
                     v-bind:onChangeFunctionName="this.onChangeFunctionNames.RRField"
                     @related-records-selected="handleRRSelection"
                     ref="RRField"
@@ -156,19 +222,19 @@
                         v-bind:dropdown-title="this.dropdownTitles.RAField"
                         v-bind:dropdownEntries="this.relatedAppDisplayFields"
                         v-bind:entrySelection="computation.relatedAppTargetField"
+                        v-bind:previouslySelected="this.errorPreviousSelections.RAField"
                         v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
                         @related-app-field-selected="handleRAFieldSelection"
                         ref="RAField"
                     />
-                </div>
 
-                <div v-if="this.computation.relatedAppTargetField">
                     <optionSelectDropdown
                         v-if="this.computation.relatedAppTargetField"
                         dropdown-name="CFField"
                         v-bind:dropdown-title="this.dropdownTitles.CFField"
                         v-bind:dropdownEntries="this.calcFuncFields"
                         v-bind:entrySelection="computation.calcFuncField"
+                        v-bind:previouslySelected="this.errorPreviousSelections.CFField"
                         v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
                         @calc-func-selected="handleCalcFuncSelection"
                         ref="CFField"
@@ -180,6 +246,7 @@
                     v-bind:dropdown-title="this.dropdownTitles.OField"
                     v-bind:dropdownEntries="this.outputFields"
                     v-bind:entrySelection="computation.outputField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.OField"
                     v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
                     @output-field-selected="handleOutputFieldCodeSelection"
                 />
@@ -244,7 +311,7 @@
             }
         },
         template: `
-            <div>
+            <div v-if="this.fullyLoaded">
                 <computationItem
                     v-for="(computation, index) in computations"
                     @addNewComputation="handleAddComputation"
