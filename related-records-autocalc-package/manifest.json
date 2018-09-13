@@ -29,7 +29,7 @@
     "config": {
         "html": "html/config.html",
         "js": [
-            "js/vue.js",
+			"https://js.cybozu.com/vuejs/v2.3.3/vue.min.js",
             "js/function-definitions.js",
             "js/config.js"
         ],
