@@ -144,11 +144,7 @@ function setConfigFields (config) {
                 "relatedRecords": records,
                 "outputFields": setOutputFields(resp)
             });
-            console.log("records: ");
-            console.log(records);
         });
-        console.log("setConfigFields: " );
-        console.log(config);
     }).catch(function(err) {
         console.error('error in setConfigFields: ', err);
     });
