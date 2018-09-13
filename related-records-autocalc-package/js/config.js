@@ -57,10 +57,13 @@
                 <select v-model="selected" @change="handleChange">
                     <option disabled value="">Select a field</option>
                     <option v-for="entry in dropdownEntries" v-bind:value="entry">
-                        <span v-if="entry.code != null">{{ entry.code }}</span>
+                        <span v-if="entry.code != null">{{entry.label}}:{{ entry.code }}</span>
                         <span v-else>{{ entry.name }}</span>
                     </option>
                 </select>
+                <span v-if="previouslySelected">
+                    Previously Selected: {{this.previouslySelected.label}}:{{ this.previouslySelected.code }}
+                </span>
             </div>
         `
     });
@@ -111,21 +114,34 @@
             // Error check all fields to ensure that their field_code still exists in the app (except for calcFuncations)
             // Error check RRField
             if (this.errorsInField(this.relatedRecords, this.computation.displayAppRRField)) {
+
+                // Save RRField value and all dependent fields as well.
                 this.errorPreviousSelections.RRField = this.computation.displayAppRRField;
+                this.errorPreviousSelections.RAField = this.computation.relatedAppDisplayField;
+
+                // Clear previously saved RRField entry selection in compuation
                 this.computation.displayAppRRField = "";
             }
 
             // Error check RAField
             if (this.relatedAppDisplayFields) {
                 if (this.errorsInField(this.relatedAppDisplayFields, this.computation.relatedAppTargetField)) {
+
+                    // Save RAField value
                     this.errorPreviousSelections.RAField = this.computation.relatedAppDisplayField;
+
+                    // Clear previously saved RAField entry selection in compuation
                     this.computation.relatedAppDisplayField = "";
                 }
             }
             
             // Error check OField
             if (this.errorsInField(this.outputFields, this.computation.outputField)) {
+
+                // Save OField value
                 this.errorPreviousSelections.OField = this.computation.outputField;
+
+                // Clear previously saved OField entry selection in compuation
                 this.computation.outputField = "";
             }
         },
@@ -174,12 +190,12 @@
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 // Set selected relatedAppTargetField to "".
                 this.computation.relatedAppTargetField = "";
-                // this.$refs.RAField.resetSelection(); // reset v-model variable
+                this.$refs.RAField.resetSelection(); // reset v-model variable
 
                 // Clear calcFuncField and calcFuncFields
                 this.computation.calcFuncField = "";
                 this.calcFuncFields = {};
-                // this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
+                this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
             },
             handleRAFieldSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
@@ -216,7 +232,9 @@
                     ref="RRField"
                 />
                 
+                <!--
                 <div v-if="this.computation.displayAppRRField">
+                -->
                     <optionSelectDropdown
                         dropdown-name="RAField"
                         v-bind:dropdown-title="this.dropdownTitles.RAField"
@@ -229,7 +247,6 @@
                     />
 
                     <optionSelectDropdown
-                        v-if="this.computation.relatedAppTargetField"
                         dropdown-name="CFField"
                         v-bind:dropdown-title="this.dropdownTitles.CFField"
                         v-bind:dropdownEntries="this.calcFuncFields"
@@ -239,7 +256,9 @@
                         @calc-func-selected="handleCalcFuncSelection"
                         ref="CFField"
                     />
+                <!--
                 </div>
+                -->
 
                 <optionSelectDropdown
                     dropdown-name="OField"
