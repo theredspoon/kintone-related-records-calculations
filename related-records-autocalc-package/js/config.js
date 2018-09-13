@@ -24,6 +24,7 @@
 
     setConfigFields(data)
 
+    // This vue component includes a label, dropdown, and displays the previusly selected option in case of an error
     Vue.component('optionSelectDropdown', {
         props: [
             "dropdownName",
@@ -35,7 +36,8 @@
         ],
         data: function() {
             return {
-                selected: !!this.entrySelection ? this.entrySelection : ""
+
+                selected: this.entrySelection != null ? this.entrySelection : ""
             }
         },
         methods: {
@@ -48,7 +50,7 @@
         },
         watch: {
             entrySelection: function (selection) {
-                this.selected = !!this.entrySelection ? this.entrySelection : "";
+                this.selected = this.entrySelection != null ? this.entrySelection : "";
             }
         },
         template: `
@@ -61,13 +63,19 @@
                         <span v-else>{{ entry.name }}</span>
                     </option>
                 </select>
-                <span v-if="previouslySelected">
-                    Previously Selected: {{this.previouslySelected.label}}:{{ this.previouslySelected.code }}
+                <span v-if="previouslySelected" style="color: red">
+                    <span v-if="this.dropdownName === 'CFField'">
+                        Previously Selected: {{ this.previouslySelected.name }} : {{ this.previouslySelected.fn }}
+                    </span>
+                    <span v-else>
+                        Previously Selected: {{ this.previouslySelected.label }} : {{ this.previouslySelected.code }}
+                    </span>
                 </span>
             </div>
         `
     });
 
+    // This vue component manages one computation's data
     Vue.component("computationItem", {
         props: [
             "calcFunctions",
@@ -80,13 +88,13 @@
         ],
         data: function() {
             return {
-                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : [],
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : [],
+                "relatedAppDisplayFields": this.computation.displayAppRRField != null ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : [],
+                "calcFuncFields": this.computation.relatedAppTargetField != null ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : [],
                 dropdownTitles: {
-                    RRField: "Pick a related records field",
-                    RAField: "Pick a field from the related app to calculate",
-                    CFField: "Pick a calculation to use on the target related records field",
-                    OField: "Pick a field from the display app to output the computation"
+                    RRField: "Related Record Field:",
+                    RAField: "Field in Related Record:",
+                    CFField: "Calcuation on Field:",
+                    OField: "Output Calculation to Field:"
                 },
                 onChangeFunctionNames: {
                     RRField: "related-records-selected",
@@ -94,6 +102,12 @@
                     CFField: "calc-func-selected",
                     OField: "output-field-selected"
                 },
+
+                /*
+                    If the currently selected entries in compution to be passed into optionSelectDropdown are not valid anymore,
+                    Save those curently selected entires in here for safe keeping, and then display them in optionSelectDropdown
+                    as the previusly selected entry to help users to figure out what entries to select again for each optionSelectDrodpown.
+                */
                 errorPreviousSelections: {
                     RRField: null,
                     RAField: null,
@@ -115,23 +129,30 @@
             // Error check RRField
             if (this.errorsInField(this.relatedRecords, this.computation.displayAppRRField)) {
 
-                // Save RRField value and all dependent fields as well.
+                // Save RRField value, RAField, and CFField values
                 this.errorPreviousSelections.RRField = this.computation.displayAppRRField;
-                this.errorPreviousSelections.RAField = this.computation.relatedAppDisplayField;
+                this.errorPreviousSelections.RAField = this.computation.relatedAppTargetField;
+                this.errorPreviousSelections.CFField = this.computation.calcFuncField;
 
                 // Clear previously saved RRField entry selection in compuation
                 this.computation.displayAppRRField = "";
+
+                // Also reset the other fields
+                this.computation.relatedAppTargetField = "";
+                this.computation.calcFuncField = "";
             }
 
             // Error check RAField
             if (this.relatedAppDisplayFields) {
                 if (this.errorsInField(this.relatedAppDisplayFields, this.computation.relatedAppTargetField)) {
 
-                    // Save RAField value
-                    this.errorPreviousSelections.RAField = this.computation.relatedAppDisplayField;
+                    // Save RAField value and CFField value
+                    this.errorPreviousSelections.RAField = this.computation.relatedAppTargetField;
+                    this.errorPreviousSelections.CFField = this.computation.calcFuncField;
 
                     // Clear previously saved RAField entry selection in compuation
-                    this.computation.relatedAppDisplayField = "";
+                    this.computation.relatedAppTargetField = "";
+                    this.computation.calcFuncField = "";
                 }
             }
             
@@ -148,11 +169,14 @@
         methods: {
             
             /*
-            Given a collection of "entries" for a dropdown and the previuslySelected entry that was saved
-            Figure out if the previouslySelected entry still exists in the collection.
-            Error if previouslySelected can't be found, other wise no error.
+                Given a collection of "entries" for a dropdown and the previuslySelected entry that was saved
+                Figure out if the previouslySelected entry still exists in the collection.
+                Error if previouslySelected can't be found, other wise no error.
             */
             errorsInField(fieldEntries, previouslySelected) {
+
+                // Todo: if we ca iterate through an array with the for (var ... in ...) technique, then we can remove the
+                // if else statement and everything in the if (Array.isArray(fieldEntries) code block.
 
                 // Is fieldEntries an array?
                 if (Array.isArray(fieldEntries)) {
@@ -186,7 +210,7 @@
                 // Set the related app Id from the selected related record.
                 this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
 
-                // Set RAFIELD to the related fields from the selected related record
+                // Calculate the dropdownEntries for RAField based on the RRField entry selection
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 // Set selected relatedAppTargetField to "".
                 this.computation.relatedAppTargetField = "";
@@ -201,7 +225,7 @@
                 this.computation.relatedAppTargetField = selection;
                 this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
                 this.computation.calcFuncField = "";
-                // this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
+                this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
             },
             handleOutputFieldCodeSelection: function(selection) {
                 this.computation.outputField = selection;
@@ -232,33 +256,27 @@
                     ref="RRField"
                 />
                 
-                <!--
-                <div v-if="this.computation.displayAppRRField">
-                -->
-                    <optionSelectDropdown
-                        dropdown-name="RAField"
-                        v-bind:dropdown-title="this.dropdownTitles.RAField"
-                        v-bind:dropdownEntries="this.relatedAppDisplayFields"
-                        v-bind:entrySelection="computation.relatedAppTargetField"
-                        v-bind:previouslySelected="this.errorPreviousSelections.RAField"
-                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
-                        @related-app-field-selected="handleRAFieldSelection"
-                        ref="RAField"
-                    />
+                <optionSelectDropdown
+                    dropdown-name="RAField"
+                    v-bind:dropdown-title="this.dropdownTitles.RAField"
+                    v-bind:dropdownEntries="this.relatedAppDisplayFields"
+                    v-bind:entrySelection="computation.relatedAppTargetField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.RAField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
+                    @related-app-field-selected="handleRAFieldSelection"
+                    ref="RAField"
+                />
 
-                    <optionSelectDropdown
-                        dropdown-name="CFField"
-                        v-bind:dropdown-title="this.dropdownTitles.CFField"
-                        v-bind:dropdownEntries="this.calcFuncFields"
-                        v-bind:entrySelection="computation.calcFuncField"
-                        v-bind:previouslySelected="this.errorPreviousSelections.CFField"
-                        v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
-                        @calc-func-selected="handleCalcFuncSelection"
-                        ref="CFField"
-                    />
-                <!--
-                </div>
-                -->
+                <optionSelectDropdown
+                    dropdown-name="CFField"
+                    v-bind:dropdown-title="this.dropdownTitles.CFField"
+                    v-bind:dropdownEntries="this.calcFuncFields"
+                    v-bind:entrySelection="computation.calcFuncField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.CFField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
+                    @calc-func-selected="handleCalcFuncSelection"
+                    ref="CFField"
+                />
 
                 <optionSelectDropdown
                     dropdown-name="OField"
@@ -273,8 +291,6 @@
             </div>
         `
     });
-
-    // todo: public function to clear selections based on component passed in.
 
     // Vue root instance
     let vm = new Vue({
