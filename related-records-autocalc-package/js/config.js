@@ -143,7 +143,7 @@
             }
 
             /*
-            Todo: Fix error checking for RAField (this.copmutation.relatedAppTargetField)
+            *   Todo: Fix error checking for RAField (this.copmutation.relatedAppTargetField)
             */
             // // Error check RAField
             // if (this.relatedAppDisplayFields) {
@@ -315,7 +315,10 @@
             handleAddComputation: function(index) {
                 let before = this.computations.slice(0, index + 1);
                 let after = this.computations.slice(index + 1, this.computations.length);
+
                 this.computations = [...before, {
+                    
+                    // These are the variables in the computation object, they represent saved entrySelections
                     "displayAppRRField": "", 
                     "relatedAppId":"", 
                     "relatedAppTargetField": "",
@@ -371,5 +374,15 @@
             </div>
         `
     });
+
+    /*
+    *   Because the names of fields in the copmutation are confusing I decided to rename them in all but the root component.
+    *   
+    *   So here is what I unoffically renamed them:
+    *   displayAppRRField = RRField
+    *   relatedAppTargetField = RAField
+    *   calcFuncField = CFField
+    *   outputField = OField
+    */
 
 })(kintone.$PLUGIN_ID);
