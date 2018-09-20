@@ -1,6 +1,5 @@
-"use strict";
-
 (function(PLUGIN_ID) {
+    "use strict";
     var CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
     console.log('getConfig is ', CONFIG);
 
