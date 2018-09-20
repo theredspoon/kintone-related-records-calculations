@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 // CALCULATION FUNCTIONS
 var NUMCALCFUNCTIONS = {
@@ -29,9 +29,9 @@ function rehydrateComputations(config) {
 function getFormFields (id) {
     // TODO: spinner while waiting
     return kintone.api(kintone.api.url("/k/v1/app/form/fields", true), "GET", {"app": id})
-        .then(function (resp) {
+        .then(function(resp) {
             return resp.properties;
-        }).catch(function (err) {
+        }).catch(function(err) {
             console.log('getFormFields err', err);
         });
 }
@@ -104,7 +104,7 @@ function getRRDisplayFieldProps (fieldList) {
     return Promise.all(recordsList.map(function(relatedRecord) {
         relatedAppId = relatedRecord.referenceTable.relatedApp.app;
         return getFormFields(relatedAppId)
-        .then(function (relatedAppFieldList) {
+        .then(function(relatedAppFieldList) {
             displayFieldArray = relatedRecord.referenceTable.displayFields;
 
             // turn each string in the array into an object
@@ -119,7 +119,7 @@ function getRRDisplayFieldProps (fieldList) {
             }
             return relatedRecord;
         })
-        .catch(function (err) {
+        .catch(function(err) {
             console.error('error in getRRDisplayFieldProps: ', err);
         })
     }));
@@ -137,16 +137,16 @@ function setOutputFields (fieldList) {
 }
 
 function setConfigFields (config) {
-    return getFormFields(appId).then(function (resp) {
-        getRRDisplayFieldProps(resp).then(function (records) {
+    return getFormFields(appId).then(function(resp) {
+        getRRDisplayFieldProps(resp).then(function(records) {
             Object.assign(config, {
                 "formFields": resp,
                 "relatedRecords": records,
                 "outputFields": setOutputFields(resp)
-            })
-        })
+            });
+        });
 
-    }).catch(function (err) {
+    }).catch(function(err) {
         console.error('error in setConfigFields: ', err);
     });
 }
@@ -161,8 +161,7 @@ function getRelatedAppDisplayFields (selectedRRField, RRArray) {
 }
 
 function getCalcFuncFields(field, calcFunctions) {
-    return isFieldTypeNumeric(field) ? 
-    calcFunctions.num : calcFunctions.text;
+    return isFieldTypeNumeric(field) ? calcFunctions.num : calcFunctions.text;
 }
 
 function passErrorHandler(computations) {
@@ -183,6 +182,6 @@ function passErrorHandler(computations) {
 
         // if previously saved field is no longer found after the API call updates the list
 
-    };
+    }
     return true;
 }

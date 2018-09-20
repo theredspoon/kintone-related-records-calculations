@@ -473,6 +473,23 @@
   cursor: pointer;
 }
 
+.kintoneplugin-button-mini {
+  display: inline-block;
+  box-sizing: border-box;
+  outline: none;
+  border: 1px solid #e3e7e8;
+  background-color: #f7f9fa;
+  box-shadow: 1px 1px 1px #fff inset;
+  color: #3498db;
+  text-align: center;
+}
+
+.kintoneplugin-button-mini:hover {
+  background-color: #c8d6dd;
+  box-shadow: none;
+  cursor: pointer;
+}
+
 /* Disabled button */
 /*
 <button class="kintoneplugin-button-disabled">A disabled button</button>

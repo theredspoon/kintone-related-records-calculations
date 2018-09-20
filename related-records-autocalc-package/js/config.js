@@ -5,7 +5,6 @@
 
     // TODO: pass CONFIG into <select> options to prepopulate
     // before making API call to update any field changes
-
     // kintone.plugin.app.setConfig({});
 
     let previouslySavedComputations = rehydrateComputations(CONFIG);
@@ -32,56 +31,67 @@
 
     // Register Vue components (must be done before Vue instantiation)
     Vue.component("relatedRecordsSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.displayAppRRField ? this.displayAppRRField : "Select a field"
-            }
+            };
         },
         methods: {
-            handleChange: function () {
-                this.$emit("relatedRecordsFieldSelected", this.selected)
+            handleChange: function() {
+                this.$emit("relatedRecordsFieldSelected", this.selected);
             }
         },
         template: `
             <div>
                 Pick a related records field
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="record in relatedRecords" v-bind:value="record" :key="record.code">
-                        {{record.label}} ({{record.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.displayAppRRField.code}}</span>
+
+                <div class="kintoneplugin-select-outer">
+                    <div class="kintoneplugin-select">
+                        <select v-model="selected" @change="handleChange">
+                            <option disabled value="Select a field">Select a field</option>
+                            <option v-for="record in relatedRecords" v-bind:value="record" :key="record.code">
+                                {{record.label}} ({{record.code}})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <span class="kintoneplugin-row">Selected: {{this.displayAppRRField.code}}</span>
             </div>
         `,
         props: ["relatedRecords", "displayAppRRField"]
-    })
+    });
 
     Vue.component("relatedAppFieldCodeSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.relatedAppTargetField ? this.relatedAppTargetField : "Select a field"
-            }
+            };
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("relatedAppFieldCodeSelected", this.selected)
             }
         },
         template: `
             <div>
                 Pick a field from the related app to calculate.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in relatedAppDisplayFields" v-bind:value="value" :key="value.code">
-                    {{value.label}} ({{value.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.relatedAppTargetField.code}}</span>
+
+                <div class="kintoneplugin-select-outer">
+                    <div class="kintoneplugin-select">
+                        <select v-model="selected" @change="handleChange">
+                            <option disabled value="Select a field">Select a field</option>
+                            <option v-for="value in relatedAppDisplayFields" v-bind:value="value" :key="value.code">
+                            {{value.label}} ({{value.code}})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <span class="kintoneplugin-row">Selected: {{this.relatedAppTargetField.code}}</span>
             </div>
         `,
         props: ["relatedAppDisplayFields", "relatedAppTargetField"]
-    })
+    });
 
     /*
     Weird behavior on desktop:
@@ -94,96 +104,106 @@
     */
 
     Vue.component("outputFieldSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.outputField ? this.outputField : "Select a field"
-            }
+            };
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("outputFieldSelected", this.selected)
             }
         },
         template: `
             <div>
                 Pick a field from the display app to output the computation.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in outputFields" v-bind:value="value" :key="value.code">
-                    {{value.label}} ({{value.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.outputField.code}}</span>
+
+                <div class="kintoneplugin-select-outer">
+                    <div class="kintoneplugin-select">
+                        <select v-model="selected" @change="handleChange">
+                            <option disabled value="Select a field">Select a field</option>
+                            <option v-for="value in outputFields" v-bind:value="value" :key="value.code">
+                            {{value.label}} ({{value.code}})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <span class="kintoneplugin-row">Selected: {{this.outputField.code}}</span>
             </div>
         `,
         props: ["outputFields", "outputField"]
-    })
+    });
 
     Vue.component("calcFuncFieldSelect", {
-        data: function () {
+        data: function() {
             return {
                 selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
-            }
+            };
         },
         methods: {
-            handleChange: function () {
+            handleChange: function() {
                 this.$emit("calcFuncFieldSelected", this.selected)
             }
         },
         template: `
             <div>
                 Pick a calculation to use on the target related records field.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in calcFuncFields" v-bind:value="value" :key="value.fn">
-                    {{value.name}}
-                    </option>
-                </select>
-                <span>Selected: {{this.calcFuncField.name}}</span>
+
+                <div class="kintoneplugin-select-outer">
+                    <div class="kintoneplugin-select">
+                        <select v-model="selected" @change="handleChange">
+                            <option disabled value="Select a field">Select a field</option>
+                            <option v-for="value in calcFuncFields" v-bind:value="value" :key="value.fn">
+                            {{value.name}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <span class="kintoneplugin-row">Selected: {{this.calcFuncField.name}}</span>
             </div>
         `,
         props: ["calcFuncFields", "calcFuncField"]
-    })
+    });
 
     Vue.component("computation", {
-        data: function () {
+        data: function() {
             return {
                 "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
-            }
+                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : ""
+            };
         },
         methods: {
-            handleRRSelection: function (selection) {
+            handleRRSelection: function(selection) {
                 this.computation.displayAppRRField = selection;
-                this.computation.relatedAppId = selection.referenceTable.relatedApp.app, 
+                this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
                 this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
                 this.computation.relatedAppTargetField = "";
                 this.calcFuncFields = {};
                 this.computation.calcFuncField = "";
             },
-            handleRRFieldCodeSelection: function (selection) {
+            handleRRFieldCodeSelection: function(selection) {
                 this.computation.relatedAppTargetField = selection;
                 this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
                 this.computation.calcFuncField = "";
             },
-            handleOutputFieldCodeSelection: function (selection) {
+            handleOutputFieldCodeSelection: function(selection) {
                 this.computation.outputField = selection;
             },
-            handleCalcFuncFieldSelection: function (selection) {
+            handleCalcFuncFieldSelection: function(selection) {
                 this.computation.calcFuncField = selection;
             },
-            addNewComputation: function () {
-                this.$emit("addNewComputation", this.index)
+            addNewComputation: function() {
+                this.$emit("addNewComputation", this.index);
             },
-            removeComputation: function () {
-                this.$emit("removeComputation", this.index)
+            removeComputation: function() {
+                this.$emit("removeComputation", this.index);
             }
 
         },
         template: `
             <div>
-                <button @click="addNewComputation">+</button>
-                <button v-if="length > 1" @click="removeComputation">-</button>
+                <button class="kintoneplugin-button-mini" @click="addNewComputation">+</button>
+                <button class="kintoneplugin-button-mini" v-if="length > 1" @click="removeComputation">-</button>
                 <relatedRecordsSelect
                     v-bind:relatedRecords="relatedRecords"
                     v-bind:displayAppRRField="computation.displayAppRRField"
@@ -218,24 +238,24 @@
             "index",
             "length"
         ]
-    })
+    });
 
     // instantiate Vue
     let vm = new Vue({
         // initial state
         data: data,
         el: "#plugin",
-        created: function () {
+        created: function() {
             if (this.computations.length === 0) {
                 this.handleAddComputation(0);
-            } 
+            }
         },
         methods: {
-            count: function () {
-                this.counter++
+            count: function() {
+                this.counter++;
                 return this.counter;
             },
-            handleAddComputation: function (index) {
+            handleAddComputation: function(index) {
                 let before = this.computations.slice(0, index + 1);
                 let after = this.computations.slice(index + 1, this.computations.length);
                 this.computations = [...before, {
@@ -247,18 +267,18 @@
                     "id": this.count()
                 }, ...after];
             },
-            handleRemoveComputation: function (index) {
+            handleRemoveComputation: function(index) {
                 let before = this.computations.slice(0, index);
                 let after = this.computations.slice(index + 1, this.computations.length);
                 this.computations = [...before, ...after];
             },
-            savePluginSettings: function () {
+            savePluginSettings: function() {
                 try {
                     passErrorHandler(this.computations);
                     let dehydratedConfig = this.computations.reduce(function(acc, computation, index) {
                         acc[index] = JSON.stringify(computation);
                         return acc;
-                        }, {});
+                    }, {});
                     kintone.plugin.app.setConfig(dehydratedConfig);
                 } catch (error) {
                     console.error(error.message);
@@ -281,7 +301,8 @@
                 v-bind:outputFields="outputFields"
                 v-bind:relatedRecords="relatedRecords"
             ></computation>
-            <button @click="savePluginSettings">SAVE</button>
+            <br>
+            <button class="kintoneplugin-button-dialog-ok" @click="savePluginSettings">SAVE</button>
             </div>
         `
     });
