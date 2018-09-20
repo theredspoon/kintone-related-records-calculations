@@ -9,7 +9,7 @@ runAll(["develop", "upload"], {
   results
     .filter(({code}) => code)
     .forEach(({name}) => {
-      console.log(`"npm run ${name}" was failed`);
+      console.log(`"npm run ${name}" failed.`);
     })
   ;
 });
