@@ -1,6 +1,6 @@
-"use strict";
-
 (function(PLUGIN_ID) {
+    "use strict";
+    
     // CUSTOMIZATION SETTINGS
     const QUERYLIMIT = 500;
     const APPID = kintone.app.getId();
