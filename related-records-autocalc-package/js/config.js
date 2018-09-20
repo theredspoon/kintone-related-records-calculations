@@ -1,15 +1,13 @@
 (function(PLUGIN_ID) {
     "use strict";
+
+    // Get previous settings from kintone app
     var CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
-    console.log('getConfig is ', CONFIG);
 
     // TODO: pass CONFIG into <select> options to prepopulate
     // before making API call to update any field changes
 
-    // kintone.plugin.app.setConfig({});
-
     let previouslySavedComputations = rehydrateComputations(CONFIG);
-    console.log('previouslySavedComputations is ', previouslySavedComputations);
 
     var data = {
         "calcFunctions": {
@@ -20,195 +18,65 @@
         "relatedRecords": previouslySavedComputations.map(comp => comp.displayAppRRField) || [],
         "outputFields": previouslySavedComputations.map(comp => comp.outputField) || [],
         "counter": previouslySavedComputations.length || 0,
-        "computations": previouslySavedComputations || [] // settings to pass into customize.js will come from here
+        "computations": previouslySavedComputations || [],
+        "fullyLoaded": false
     };
 
-    console.log('data before setConfigFields is', setTimeout(() => data, 0));
+    setConfigFields(data)
 
-    setConfigFields(data);
-    // TODO: error check current data against saved data
-
-    console.log('data after setConfigFields is ', data);
-
-    // Register Vue components (must be done before Vue instantiation)
-    Vue.component("relatedRecordsSelect", {
-        data: function () {
+    // This vue component includes a label, dropdown, and displays the previusly selected option in case of an error
+    Vue.component('optionSelectDropdown', {
+        props: [
+            "dropdownName",
+            "dropdownTitle",
+            "onChangeFunctionName",
+            "dropdownEntries",
+            "entrySelection",
+            "previouslySelected"
+        ],
+        data: function() {
             return {
-                selected: !!this.displayAppRRField ? this.displayAppRRField : "Select a field"
+
+                selected: this.entrySelection != null ? this.entrySelection : ""
             }
         },
         methods: {
-            handleChange: function () {
-                this.$emit("relatedRecordsFieldSelected", this.selected)
+            resetSelection: function() {
+                this.selected = "";
+            },
+            handleChange: function() {
+                this.$emit(this.onChangeFunctionName, this.selected);
+            }
+        },
+        watch: {
+            entrySelection: function (selection) {
+                this.selected = this.entrySelection != null ? this.entrySelection : "";
             }
         },
         template: `
             <div>
-                Pick a related records field
+                {{ dropdownTitle }}
                 <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="record in relatedRecords" v-bind:value="record" :key="record.code">
-                        {{record.label}} ({{record.code}})
+                    <option disabled value="">Select a field</option>
+                    <option v-for="entry in dropdownEntries" v-bind:value="entry">
+                        <span v-if="entry.code != null">{{entry.label}}:{{ entry.code }}</span>
+                        <span v-else>{{ entry.name }}</span>
                     </option>
                 </select>
-                <span>Selected: {{this.displayAppRRField.code}}</span>
+                <span v-if="previouslySelected" style="color: red">
+                    <span v-if="this.dropdownName === 'CFField'">
+                        Previously Selected: {{ this.previouslySelected.name }} : {{ this.previouslySelected.fn }}
+                    </span>
+                    <span v-else>
+                        Previously Selected: {{ this.previouslySelected.label }} : {{ this.previouslySelected.code }}
+                    </span>
+                </span>
             </div>
-        `,
-        props: ["relatedRecords", "displayAppRRField"]
-    })
+        `
+    });
 
-    Vue.component("relatedAppFieldCodeSelect", {
-        data: function () {
-            return {
-                selected: !!this.relatedAppTargetField ? this.relatedAppTargetField : "Select a field"
-            }
-        },
-        methods: {
-            handleChange: function () {
-                this.$emit("relatedAppFieldCodeSelected", this.selected)
-            }
-        },
-        template: `
-            <div>
-                Pick a field from the related app to calculate.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in relatedAppDisplayFields" v-bind:value="value" :key="value.code">
-                    {{value.label}} ({{value.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.relatedAppTargetField.code}}</span>
-            </div>
-        `,
-        props: ["relatedAppDisplayFields", "relatedAppTargetField"]
-    })
-
-    /*
-    Weird behavior on desktop:
-    1) change RR field to option #1
-    2) change display app target field
-    3) change RR field to option #2
-    4) change RR field to option #1
-    Problem: display app target field doesn't reset
-    Bigger problem: outputField gets stuck
-    */
-
-    Vue.component("outputFieldSelect", {
-        data: function () {
-            return {
-                selected: !!this.outputField ? this.outputField : "Select a field"
-            }
-        },
-        methods: {
-            handleChange: function () {
-                this.$emit("outputFieldSelected", this.selected)
-            }
-        },
-        template: `
-            <div>
-                Pick a field from the display app to output the computation.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in outputFields" v-bind:value="value" :key="value.code">
-                    {{value.label}} ({{value.code}})
-                    </option>
-                </select>
-                <span>Selected: {{this.outputField.code}}</span>
-            </div>
-        `,
-        props: ["outputFields", "outputField"]
-    })
-
-    Vue.component("calcFuncFieldSelect", {
-        data: function () {
-            return {
-                selected: !!this.calcFuncField ? this.calcFuncField : "Select a field"
-            }
-        },
-        methods: {
-            handleChange: function () {
-                this.$emit("calcFuncFieldSelected", this.selected)
-            }
-        },
-        template: `
-            <div>
-                Pick a calculation to use on the target related records field.
-                <select v-model="selected" @change="handleChange">
-                    <option disabled value="Select a field">Select a field</option>
-                    <option v-for="value in calcFuncFields" v-bind:value="value" :key="value.fn">
-                    {{value.name}}
-                    </option>
-                </select>
-                <span>Selected: {{this.calcFuncField.name}}</span>
-            </div>
-        `,
-        props: ["calcFuncFields", "calcFuncField"]
-    })
-
-    Vue.component("computation", {
-        data: function () {
-            return {
-                "relatedAppDisplayFields": !!this.computation.displayAppRRField ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : "",
-                "calcFuncFields": !!this.computation.relatedAppTargetField ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : "",
-            }
-        },
-        methods: {
-            handleRRSelection: function (selection) {
-                this.computation.displayAppRRField = selection;
-                this.computation.relatedAppId = selection.referenceTable.relatedApp.app, 
-                this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
-                this.computation.relatedAppTargetField = "";
-                this.calcFuncFields = {};
-                this.computation.calcFuncField = "";
-            },
-            handleRRFieldCodeSelection: function (selection) {
-                this.computation.relatedAppTargetField = selection;
-                this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
-                this.computation.calcFuncField = "";
-            },
-            handleOutputFieldCodeSelection: function (selection) {
-                this.computation.outputField = selection;
-            },
-            handleCalcFuncFieldSelection: function (selection) {
-                this.computation.calcFuncField = selection;
-            },
-            addNewComputation: function () {
-                this.$emit("addNewComputation", this.index)
-            },
-            removeComputation: function () {
-                this.$emit("removeComputation", this.index)
-            }
-
-        },
-        template: `
-            <div>
-                <button @click="addNewComputation">+</button>
-                <button v-if="length > 1" @click="removeComputation">-</button>
-                <relatedRecordsSelect
-                    v-bind:relatedRecords="relatedRecords"
-                    v-bind:displayAppRRField="computation.displayAppRRField"
-                    @relatedRecordsFieldSelected="handleRRSelection"
-                ></relatedRecordsSelect>
-
-                <relatedAppFieldCodeSelect
-                    v-bind:relatedAppDisplayFields="relatedAppDisplayFields"
-                    v-bind:relatedAppTargetField="computation.relatedAppTargetField"
-                    @relatedAppFieldCodeSelected="handleRRFieldCodeSelection"
-                ></relatedAppFieldCodeSelect>
-
-                <outputFieldSelect
-                    v-bind:outputFields="outputFields"
-                    v-bind:outputField="computation.outputField"
-                    @outputFieldSelected="handleOutputFieldCodeSelection"
-                ></outputFieldSelect>
-
-                <calcFuncFieldSelect
-                    v-bind:calcFuncFields="calcFuncFields"
-                    v-bind:calcFuncField="computation.calcFuncField"
-                    @calcFuncFieldSelected="handleCalcFuncFieldSelection"
-                ></calcFuncFieldSelect>
-            </div>
-        `,
+    // This vue component manages one computation's data
+    Vue.component("computationItem", {
         props: [
             "calcFunctions",
             "formFields",
@@ -217,73 +85,304 @@
             "computation",
             "index",
             "length"
-        ]
-    })
+        ],
+        data: function() {
+            return {
+                "relatedAppDisplayFields": this.computation.displayAppRRField != null ? getRelatedAppDisplayFields(this.computation.displayAppRRField, this.relatedRecords) : [],
+                "calcFuncFields": this.computation.relatedAppTargetField != null ? getCalcFuncFields(this.computation.relatedAppTargetField, this.calcFunctions) : [],
+                dropdownTitles: {
+                    RRField: "Related Record Field:",
+                    RAField: "Field in Related Record:",
+                    CFField: "Calcuation on Field:",
+                    OField: "Output Calculation to Field:"
+                },
+                onChangeFunctionNames: {
+                    RRField: "related-records-selected",
+                    RAField: "related-app-field-selected",
+                    CFField: "calc-func-selected",
+                    OField: "output-field-selected"
+                },
 
-    // instantiate Vue
-    let vm = new Vue({
-        // initial state
-        data: data,
-        el: "#plugin",
-        created: function () {
-            if (this.computations.length === 0) {
-                this.handleAddComputation(0);
-            } 
+                /*
+                    If the currently selected entries in compution to be passed into optionSelectDropdown are not valid anymore,
+                    Save those curently selected entires in here for safe keeping, and then display them in optionSelectDropdown
+                    as the previusly selected entry to help users to figure out what entries to select again for each optionSelectDrodpown.
+                */
+                errorPreviousSelections: {
+                    RRField: null,
+                    RAField: null,
+                    CFField: null,
+                    OField: null
+                }
+            };
+        },
+
+        // Runs rights before the component is attached to the DOM
+        mounted: function() {
+
+            // Check if the data is fully loaded
+            if (!data.fullyLoaded) {
+                console.error("computationItem mounted before data variable was fully loaded.")
+            }
+
+            // Error check all fields to ensure that their field_code still exists in the app (except for calcFuncations)
+            // Error check RRField
+            if (this.errorsInField(this.relatedRecords, this.computation.displayAppRRField)) {
+
+                // Save RRField value, RAField, and CFField values
+                this.errorPreviousSelections.RRField = this.computation.displayAppRRField;
+                this.errorPreviousSelections.RAField = this.computation.relatedAppTargetField;
+                this.errorPreviousSelections.CFField = this.computation.calcFuncField;
+
+                // Clear previously saved RRField entry selection in compuation
+                this.computation.displayAppRRField = "";
+
+                // Also reset the other fields
+                this.computation.relatedAppTargetField = "";
+                this.computation.calcFuncField = "";
+            }
+
+            /*
+            *   Todo: Fix error checking for RAField (this.copmutation.relatedAppTargetField)
+            */
+            // // Error check RAField
+            // if (this.relatedAppDisplayFields) {
+            //     if (this.errorsInField(this.relatedAppDisplayFields, this.computation.relatedAppTargetField)) {
+
+            //         console.log(this.relatedAppDisplayFields);
+            //         console.log(this.computation.relatedAppTargetField);
+
+                    // // Save RAField value and CFField value
+                    // this.errorPreviousSelections.RAField = this.computation.relatedAppTargetField;
+                    // this.errorPreviousSelections.CFField = this.computation.calcFuncField;
+
+                    // // Clear previously saved RAField entry selection in compuation
+                    // this.computation.relatedAppTargetField = "";
+                    // this.computation.calcFuncField = "";
+            //     }
+            // }
+            
+            // Error check OField
+            if (this.errorsInField(this.outputFields, this.computation.outputField)) {
+
+                // Save OField value
+                this.errorPreviousSelections.OField = this.computation.outputField;
+
+                // Clear previously saved OField entry selection in compuation
+                this.computation.outputField = "";
+            }
         },
         methods: {
-            count: function () {
-                this.counter++
+            
+            /*
+                Given a collection of "entries" for a dropdown and the previuslySelected entry that was saved
+                Figure out if the previouslySelected entry still exists in the collection.
+                Error if previouslySelected can't be found, other wise no error.
+            */
+            errorsInField(fieldEntries, previouslySelected) {
+
+                // Todo: if we ca iterate through an array with the for (var ... in ...) technique, then we can remove the
+                // if else statement and everything in the if (Array.isArray(fieldEntries) code block.
+
+                // Is fieldEntries an array?
+                if (Array.isArray(fieldEntries)) {
+
+                    // Iterate through the array and compare each object with previouslySelected
+                    for (var i = 0; i < fieldEntries.length; i++) {
+
+                        // If previouslySelected is equal to the object in the array, return false for no error
+                        if(fieldEntries[i].label == previouslySelected.label && fieldEntries[i].code == previouslySelected.code) {
+                            return false;
+                        }
+                    }
+                } else {
+
+                    // Iterate through the objects opererties and compare each property with previouslySelected
+                    for (var property in this.fieldEntries) {
+
+                        // If previouslySelected is equal to the object in the array, return false for no error
+                        if(property.label == previouslySelected.label && property.code == previouslySelected.code) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            },
+            handleRRSelection: function(selection) {
+
+                // Set new related record selection
+                this.computation.displayAppRRField = selection;
+                // Set the related app Id from the selected related record.
+                this.computation.relatedAppId = selection.referenceTable.relatedApp.app;
+
+                // Calculate the dropdownEntries for RAField based on the RRField entry selection
+                this.relatedAppDisplayFields = getRelatedAppDisplayFields(selection, this.relatedRecords);
+                // Set selected relatedAppTargetField to "".
+                this.computation.relatedAppTargetField = "";
+                this.$refs.RAField.resetSelection(); // reset v-model variable
+
+                // Clear calcFuncField and calcFuncFields
+                this.computation.calcFuncField = "";
+                this.calcFuncFields = {};
+                this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
+            },
+            handleRAFieldSelection: function(selection) {
+                this.computation.relatedAppTargetField = selection;
+                this.calcFuncFields = getCalcFuncFields(selection, this.calcFunctions);
+                this.computation.calcFuncField = "";
+                this.$refs.CFField.resetSelection(); // reset v-model variable for calcfuncField
+            },
+            handleOutputFieldCodeSelection: function(selection) {
+                this.computation.outputField = selection;
+            },
+            handleCalcFuncSelection: function(selection) {
+                this.computation.calcFuncField = selection;
+            },
+            addNewComputation: function() {
+                this.$emit("addNewComputation", this.index);
+            },
+            removeComputation: function() {
+                this.$emit("removeComputation", this.index);
+            }
+        },
+        template: `
+            <div>
+                <button @click="addNewComputation">+</button>
+                <button v-if="length > 1" @click="removeComputation">-</button>
+                     
+                <optionSelectDropdown
+                    dropdownName="RRField"
+                    v-bind:dropdownTitle="this.dropdownTitles.RRField"
+                    v-bind:dropdownEntries="this.relatedRecords"
+                    v-bind:entrySelection="computation.displayAppRRField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.RRField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.RRField"
+                    @related-records-selected="handleRRSelection"
+                    ref="RRField"
+                />
+                
+                <optionSelectDropdown
+                    dropdown-name="RAField"
+                    v-bind:dropdown-title="this.dropdownTitles.RAField"
+                    v-bind:dropdownEntries="this.relatedAppDisplayFields"
+                    v-bind:entrySelection="computation.relatedAppTargetField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.RAField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.RAField"
+                    @related-app-field-selected="handleRAFieldSelection"
+                    ref="RAField"
+                />
+
+                <optionSelectDropdown
+                    dropdown-name="CFField"
+                    v-bind:dropdown-title="this.dropdownTitles.CFField"
+                    v-bind:dropdownEntries="this.calcFuncFields"
+                    v-bind:entrySelection="computation.calcFuncField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.CFField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.CFField"
+                    @calc-func-selected="handleCalcFuncSelection"
+                    ref="CFField"
+                />
+
+                <optionSelectDropdown
+                    dropdown-name="OField"
+                    v-bind:dropdown-title="this.dropdownTitles.OField"
+                    v-bind:dropdownEntries="this.outputFields"
+                    v-bind:entrySelection="computation.outputField"
+                    v-bind:previouslySelected="this.errorPreviousSelections.OField"
+                    v-bind:onChangeFunctionName="this.onChangeFunctionNames.OField"
+                    @output-field-selected="handleOutputFieldCodeSelection"
+                />
+                
+            </div>
+        `
+    });
+
+    // Vue root instance
+    let vm = new Vue({
+        data: data,
+        el: "#plugin",
+        created: function() {
+            if (this.computations.length === 0) {
+                this.handleAddComputation(0);
+            }
+        },
+        methods: {
+            count: function() {
+                this.counter++;
                 return this.counter;
             },
-            handleAddComputation: function (index) {
+            handleAddComputation: function(index) {
                 let before = this.computations.slice(0, index + 1);
                 let after = this.computations.slice(index + 1, this.computations.length);
+
                 this.computations = [...before, {
+                    
+                    // These are the variables in the computation object, they represent saved entrySelections
                     "displayAppRRField": "", 
                     "relatedAppId":"", 
-                    "relatedAppTargetField": "", 
+                    "relatedAppTargetField": "",
                     "outputField": "", 
                     "calcFuncField": "",
                     "id": this.count()
                 }, ...after];
             },
-            handleRemoveComputation: function (index) {
+            handleRemoveComputation: function(index) {
                 let before = this.computations.slice(0, index);
                 let after = this.computations.slice(index + 1, this.computations.length);
                 this.computations = [...before, ...after];
             },
-            savePluginSettings: function () {
+            savePluginSettings: function() {
                 try {
                     passErrorHandler(this.computations);
                     let dehydratedConfig = this.computations.reduce(function(acc, computation, index) {
                         acc[index] = JSON.stringify(computation);
                         return acc;
-                        }, {});
+                    }, {});
                     kintone.plugin.app.setConfig(dehydratedConfig);
                 } catch (error) {
                     console.error(error.message);
                     alert(error.message);
                 }
+            },
+            cancelPluginSettings: function() {
+                try {
+                    kintone.plugin.app.setConfig(CONFIG);
+                } catch (error) {
+                    console.error(error.message);
+                    alart(error.message);
+                }
             }
         },
         template: `
-            <div>
-            <computation
-                v-for="(computation, index) in computations"
-                @addNewComputation="handleAddComputation"
-                @removeComputation="handleRemoveComputation"
-                v-bind:computation="computation"
-                v-bind:index="index"
-                v-bind:length="computations.length"
-                v-bind:key="computation.id"
-                v-bind:calcFunctions="calcFunctions"
-                v-bind:formFields="formFields"
-                v-bind:outputFields="outputFields"
-                v-bind:relatedRecords="relatedRecords"
-            ></computation>
-            <button @click="savePluginSettings">SAVE</button>
+            <div v-if="this.fullyLoaded">
+                <computationItem
+                    v-for="(computation, index) in computations"
+                    @addNewComputation="handleAddComputation"
+                    @removeComputation="handleRemoveComputation"
+                    v-bind:computation="computation"
+                    v-bind:index="index"
+                    v-bind:length="computations.length"
+                    v-bind:key="computation.id"
+                    v-bind:calcFunctions="calcFunctions"
+                    v-bind:formFields="formFields"
+                    v-bind:outputFields="outputFields"
+                    v-bind:relatedRecords="relatedRecords"
+                />
+                <button @click="savePluginSettings">Save</button>
+                <button @click="cancelPluginSettings">Cancel</button>
             </div>
         `
     });
+
+    /*
+    *   Because the names of fields in the copmutation are confusing I decided to rename them in all but the root component.
+    *   
+    *   So here is what I unoffically renamed them:
+    *   displayAppRRField = RRField
+    *   relatedAppTargetField = RAField
+    *   calcFuncField = CFField
+    *   outputField = OField
+    */
 
 })(kintone.$PLUGIN_ID);

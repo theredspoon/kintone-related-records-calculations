@@ -1,11 +1,11 @@
 (function(PLUGIN_ID) {
     "use strict";
-
+    
     // CUSTOMIZATION SETTINGS
     const QUERYLIMIT = 500;
     const APPID = kintone.app.getId();
     const CONFIG = kintone.plugin.app.getConfig(PLUGIN_ID);
-    
+
     // HELPER FUNCTIONS
     function fetchAllRecords (params, filter, limit, opt_offset, opt_records) {
         let offset = opt_offset || 0;
@@ -23,7 +23,7 @@
             }
             return allRecords;
         });
-    };
+    }
 
     function createQuerySubstring (relatedRecord, displayAppRecord) {
         let referenceTable = relatedRecord["referenceTable"];
@@ -35,7 +35,7 @@
         let fetchCriteria = `${relatedAppFetchConditionField} = "${displayAppRecord[displayAppFetchConditionField].value}"`;
 
         if (filterCond.length > 0) {
-            return `${fetchCriteria} and ${filterCond}`
+            return `${fetchCriteria} and ${filterCond}`;
         }
         return fetchCriteria;
     }
@@ -58,69 +58,66 @@
     function sum (array) {
         if (!array.length) {
             return 0;
-        };
+        }
         return array.reduce(function(acc, curr) {
             return Number(acc) + Number(curr);
         });
-    };
+    }
     
     function product (array) {
         if (!array.length) {
             return 0;
-        };
+        }
         return array.reduce(function(acc, curr) {
             return Number(acc) * Number(curr);
         });
-    };
+    }
     
     function totalNumber (array) {
         return array.length;
-    };
+    }
     
     function mean (array) {
         if (!array.length) {
             return 0;
-        };
+        }
         return sum(array) / array.length;
-    };
+    }
     
     function median (array) {
         if (!array.length) {
             return 0;
-        };
+        }
         var numbers = args.slice(0).sort((a,b) => a - b);
         var middle = Math.floor(numbers.length / 2);
         var isEven = numbers.length % 2 === 0;
         return isEven ? (numbers[middle] + numbers[middle - 1]) / 2 : numbers[middle];
-    };
+    }
     
     function countUniques (array) {
         return array.reduce(function(acc, curr) { // needs testing
             if (acc.indexOf(curr) === -1) {
                 return acc.concat(curr);
-            } else {
-                return acc;
             }
+            return acc;
         }, []).length;
     }
-    
+
     function countNonemptyValues (acc, curr) { // is 0 an empty value? no
         return array.reduce(function(acc, curr) { // needs testing on dates
             if (curr !== "") {
                 return acc.concat(curr);
-            } else {
-                return acc;
             }
+            return acc;
         }, []).length;
-    };
-    
+    }
+
     function countNonzeroValues (acc, curr) {
         return array.reduce(function(acc, curr) { // needs testing on dates
             if (curr !== 0) {
                 return acc.concat(curr);
-            } else {
-                return acc;
             }
+            return acc;
         }, []).length;
     }
 
@@ -184,6 +181,8 @@
                     "totalCount": true
                 };
                 
+                // pass to config.js to prepopulate
+
                 return fetchAllRecords(initialRequestParams, queryFilterSubstring, QUERYLIMIT)
                 .then(function(resp) {
                     let targetFieldValues = resp.map(function(relatedAppRecord) {
